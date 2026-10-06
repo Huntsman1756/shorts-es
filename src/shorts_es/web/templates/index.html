@@ -49,8 +49,16 @@
     {% else %}
     <p class="muted">Not run yet. Run <code>shorts-es verify</code>.</p>
     {% endif %}
+    {% if data.verification and data.verification.result == 'PASS' %}
+    <p class="muted small"><strong>Independently verified against CNMV:</strong>
+    the current snapshot is reconstructed from the published series with
+    {{ data.verification.matched }}/{{ data.verification.pairs_checked }} exact
+    position matches. <a href="/methodology">Methodology →</a></p>
+    {% else %}
     <p class="muted small">Verification independently reconstructs every
-    position in the source Current sheet from the disclosure series.</p>
+    position in the source Current sheet from the disclosure series.
+    <a href="/methodology">Methodology →</a></p>
+    {% endif %}
   </div>
 </section>
 
