@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+      - name: Lint
+        run: |
+          uvx ruff@0.8 check src tests
+          uvx ruff@0.8 format --check src tests
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+          enable-cache: true
+      - name: Install
+        run: uv sync --frozen
+      - name: Offline deterministic tests
+        run: uv run pytest tests -m "not live" -q
+        # No network access is required: fixtures are synthesized in-repo.
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Build package
+        run: uv build
+      - name: Check sdist/wheel contents include web assets
+        run: |
+          uvx --from wheel unpack dist/*.whl -d /tmp/whl 2>/dev/null || python -m zipfile -l dist/*.whl | grep -q "templates/base.html"
+          python -m zipfile -l dist/*.whl | grep -E "templates/base.html|static/style.css|storage/schema.sql"

@@ -85,3 +85,8 @@ def dataset_or_404(conn: sqlite3.Connection) -> sqlite3.Row:
     if snap is None:
         raise NoDataError("no snapshots ingested yet")
     return snap
+
+
+# Module-level ASGI app for `uvicorn shorts_es.web.app:app`. Data directory
+# comes from SHORTS_ES_DATA_DIR or the platform default.
+app = create_app(Config.resolve())

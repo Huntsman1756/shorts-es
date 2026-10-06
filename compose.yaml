@@ -1,0 +1,43 @@
+services:
+  web:
+    build: .
+    image: shorts-es:0.1.0
+    restart: unless-stopped
+    volumes:
+      - shorts-es-data:/data
+    environment:
+      SHORTS_ES_DATA_DIR: /data
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    depends_on:
+      - web
+
+  # Data refresher: re-syncs the source twice a day using the same volume.
+  # Keeps SQLite + raw snapshots persistent outside the web container.
+  sync:
+    image: shorts-es:0.1.0
+    restart: "no"
+    profiles: ["job"]
+    volumes:
+      - shorts-es-data:/data
+    environment:
+      SHORTS_ES_DATA_DIR: /data
+    command: ["shorts-es", "sync"]
+
+volumes:
+  shorts-es-data:
+  caddy-data:
+  caddy-config:

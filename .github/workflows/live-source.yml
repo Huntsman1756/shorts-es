@@ -1,0 +1,24 @@
+name: live-source
+
+# Separate, non-blocking check that the real CNMV source is still reachable
+# and still matches the parser's schema contract. Never a dependency of the
+# offline suite.
+
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+
+jobs:
+  live-source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install
+        run: uv sync --frozen
+      - name: Fetch + parse + verify the live source
+        run: |
+          SHORTS_ES_DATA_DIR="$RUNNER_TEMP/shorts-es" uv run shorts-es sync
+          SHORTS_ES_DATA_DIR="$RUNNER_TEMP/shorts-es" uv run shorts-es verify
+          SHORTS_ES_DATA_DIR="$RUNNER_TEMP/shorts-es" uv run shorts-es dataset-info
