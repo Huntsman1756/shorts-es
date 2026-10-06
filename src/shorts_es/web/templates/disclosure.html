@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Disclosure — shorts-es{% endblock %}
+{% block content %}
+<h1>Disclosure</h1>
+<dl class="kv wide">
+  <dt>ID (SHA-256 of canonical row)</dt><dd><code>{{ d.disclosure_id }}</code></dd>
+  <dt>Issuer</dt><dd><a href="/issuer/{{ d.isin }}">{{ d.issuer_name }}</a></dd>
+  <dt>ISIN</dt><dd><code>{{ d.isin }}</code></dd>
+  <dt>LEI</dt><dd><code>{{ d.lei }}</code></dd>
+  <dt>Holder</dt><dd><a href="/holder/{{ d.holder_name | urlencode }}">{{ d.holder_name }}</a></dd>
+  <dt>Position date</dt><dd>{{ d.position_date }}</dd>
+  <dt>Net short position</dt><dd class="num">{{ d.position_pct }} %</dd>
+  <dt>First observed</dt><dd>{{ d.first_observed_at }}</dd>
+  <dt>Canonical payload</dt><dd><code class="json">{{ d.canonical_json }}</code></dd>
+</dl>
+
+<h2>Provenance</h2>
+<p class="muted">Physical locations where this exact disclosure appeared.</p>
+<table>
+  <thead><tr><th>Snapshot</th><th>Sheet</th><th class="num">Row</th><th>Retrieved</th><th>Parser</th></tr></thead>
+  <tbody>
+    {% for l in prov.locations %}
+    <tr>
+      <td><a href="/snapshots/{{ l.snapshot_sha256 }}"><code>{{ l.snapshot_sha256[:16] }}…</code></a></td>
+      <td><code>{{ l.sheet_name }}</code></td>
+      <td class="num">{{ l.row_number }}</td>
+      <td>{{ l.retrieved_at }}</td>
+      <td class="muted">{{ l.parser_version }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="muted">Original source: {{ source.authority }} —
+<a href="{{ source.source_url }}">{{ source.workbook }}</a></p>
+{% endblock %}

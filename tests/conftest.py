@@ -6,10 +6,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent / "fixtures"))
 
-from builder import CURRENT_A, PREVIOUS_A, SERIES_A, build_workbook  # noqa: E402
+from builder import CURRENT_A, PREVIOUS_A, SERIES_A, build_workbook
 
-from shorts_es.config import Config  # noqa: E402
-from shorts_es.pipeline import sync  # noqa: E402
+from shorts_es.config import Config
+from shorts_es.pipeline import sync
 
 
 @pytest.fixture()

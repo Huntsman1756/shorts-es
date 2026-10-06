@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Snapshot {{ snapshot.snapshot_sha256[:12] }} — shorts-es{% endblock %}
+{% block content %}
+<h1>Snapshot <code>{{ snapshot.snapshot_sha256[:16] }}…</code></h1>
+<dl class="kv wide">
+  <dt>SHA-256</dt><dd><code>{{ snapshot.snapshot_sha256 }}</code></dd>
+  <dt>Retrieved at</dt><dd>{{ snapshot.retrieved_at }}</dd>
+  <dt>Source URL</dt><dd><a href="{{ snapshot.source_url }}">{{ snapshot.source_url }}</a></dd>
+  <dt>Publication date (source)</dt><dd>{{ snapshot.publication_date or "—" }}</dd>
+  <dt>Content</dt><dd>{{ snapshot.content_length }} bytes{% if snapshot.etag %}, ETag <code>{{ snapshot.etag }}</code>{% endif %}</dd>
+  <dt>Parser</dt><dd>{{ snapshot.parser_version }}</dd>
+  <dt>Schema fingerprint</dt><dd><code>{{ snapshot.schema_fingerprint }}</code></dd>
+  <dt>Status</dt><dd>{{ snapshot.status }}</dd>
+</dl>
+
+<h2>Sheets</h2>
+<table>
+  <thead><tr><th>#</th><th>Name</th><th class="num">Rows</th><th class="num">Cols</th></tr></thead>
+  <tbody>
+    {% for s in sheets %}
+    <tr><td>{{ s.sheet_order }}</td><td><code>{{ s.sheet_name }}</code></td>
+        <td class="num">{{ s.row_count }}</td><td class="num">{{ s.col_count }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Verification</h2>
+{% if verification %}
+<p class="verify {{ 'pass' if verification.result == 'PASS' else 'fail' }}">{{ verification.result }}</p>
+<dl class="kv">
+  <dt>Pairs checked</dt><dd>{{ verification.pairs_checked }}</dd>
+  <dt>Exact matches</dt><dd>{{ verification.matched }}</dd>
+  <dt>Missing</dt><dd>{{ verification.missing }}</dd>
+  <dt>Unexpected</dt><dd>{{ verification.unexpected }}</dd>
+  <dt>Conflicts</dt><dd>{{ verification.conflicts }}</dd>
+  <dt>Verified at</dt><dd>{{ verification.verified_at }}</dd>
+</dl>
+{% else %}
+<p class="muted">Not run for this snapshot. Run <code>shorts-es verify {{ snapshot.snapshot_sha256[:12] }}</code>.</p>
+{% endif %}
+{% endblock %}

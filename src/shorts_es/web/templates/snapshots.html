@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Snapshots — shorts-es{% endblock %}
+{% block content %}
+<h1>Snapshots</h1>
+<p class="muted">Every distinct publication is kept immutably, addressed by
+the SHA-256 of its raw bytes.</p>
+<table>
+  <thead><tr><th>Retrieved (UTC)</th><th>SHA-256</th><th>Status</th><th>Published</th><th class="num">Rows</th><th>Verify</th></tr></thead>
+  <tbody>
+    {% for s in snapshots %}
+    <tr>
+      <td>{{ s.retrieved_at }}</td>
+      <td><a href="/snapshots/{{ s.snapshot_sha256 }}"><code>{{ s.snapshot_sha256[:16] }}…</code></a></td>
+      <td>{{ s.status }}</td>
+      <td>{{ s.publication_date or "—" }}</td>
+      <td class="num">{{ s.n_rows }}</td>
+      <td>{% if s.verification %}<span class="verify {{ 'pass' if s.verification.result == 'PASS' else 'fail' }}">{{ s.verification.result }}</span>{% else %}—{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">No snapshots yet. Run <code>shorts-es sync</code>.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

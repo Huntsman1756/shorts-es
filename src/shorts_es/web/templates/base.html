@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}shorts-es{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="/">shorts-es</a>
+    <span class="tagline">Reproducible CNMV public net short positions</span>
+    <nav>
+      <a href="/snapshots">snapshots</a>
+      <a href="/methodology">methodology</a>
+      <a href="/api/v1/dataset">api</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  {% block content %}{% endblock %}
+</main>
+<footer class="wrap">
+  <p class="muted">
+    shorts-es v{{ version }} · parser {{ constants.PARSER_VERSION }} ·
+    Not an official CNMV product. The
+    <a href="{{ constants.SOURCE_URL }}">source</a> prevails.
+    Publicly disclosed positions are not total short interest.
+  </p>
+</footer>
+</body>
+</html>

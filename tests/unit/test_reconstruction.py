@@ -20,8 +20,9 @@ def _latest_sha(conn):
 def test_latest_per_pair(conn):
     rows = repo.disclosures_for_issuer(conn, "ES0125220311")
     latest = reconstruction.latest_per_pair(rows)
-    blackrock = latest[("54930002KP75TLLLNO21", "ES0125220311",
-                        "BlackRock Investment Management (UK) Limited")]
+    blackrock = latest[
+        ("54930002KP75TLLLNO21", "ES0125220311", "BlackRock Investment Management (UK) Limited")
+    ]
     assert blackrock["position_date"] == "2026-08-04"
     assert blackrock["position_pct"] == "0.62"
 
@@ -67,8 +68,7 @@ def test_pair_case_variant_merges_into_one_series(conn):
     dates = {r["position_date"] for r in rows}
     assert "2014-12-23" in dates
     latest = reconstruction.latest_per_pair(rows)
-    aqr = latest[("95980020140005308793", "ES0118594417",
-                  "AQR Capital Management, LLC")]
+    aqr = latest[("95980020140005308793", "ES0118594417", "AQR Capital Management, LLC")]
     assert aqr["position_pct"] == "1.49"
     # the 2014 typo row is part of the same pair's history (queried above)
 
@@ -94,9 +94,7 @@ def test_known_at_cutoff_limits_rows(conn):
     snap = repo.get_snapshot(conn, sha)
     all_rows = repo.disclosures_for_issuer(conn, "ES0125220311")
     cutoff = datetime.fromisoformat(snap["retrieved_at"]).astimezone(UTC)
-    rows = repo.disclosures_for_issuer(
-        conn, "ES0125220311", known_at=temporal.iso_utc(cutoff)
-    )
+    rows = repo.disclosures_for_issuer(conn, "ES0125220311", known_at=temporal.iso_utc(cutoff))
     assert len(rows) == len(all_rows)
     rows_before = repo.disclosures_for_issuer(
         conn, "ES0125220311", known_at="2000-01-01T00:00:00+00:00"
@@ -127,17 +125,15 @@ def test_previous_duplicate_rows_preserve_provenance(conn):
     assert len(rows) == 1
     did = rows[0]["disclosure_id"]
     locs = repo.disclosure_provenance(conn, did)
-    prev_rows = [l for l in locs if l["sheet_name"] == constants.SHEET_PREVIOUS]
+    prev_rows = [loc for loc in locs if loc["sheet_name"] == constants.SHEET_PREVIOUS]
     assert len(prev_rows) == 2
-    assert {l["row_number"] for l in prev_rows} == {10, 11}
+    assert {loc["row_number"] for loc in prev_rows} == {10, 11}
 
 
 def test_holder_states(conn):
     sha = _latest_sha(conn)
     cur = reconstruction.current_pair_keys(conn, sha)
-    states = reconstruction.holder_states(
-        conn, "AQR Capital Management, LLC", current_pairs=cur
-    )
+    states = reconstruction.holder_states(conn, "AQR Capital Management, LLC", current_pairs=cur)
     assert len(states) >= 2
     by_isin = {s.isin: s for s in states}
     assert by_isin["ES0118594417"].position_pct == Decimal("1.49")

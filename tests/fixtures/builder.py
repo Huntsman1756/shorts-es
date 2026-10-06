@@ -25,9 +25,7 @@ def _write_metadata(wb: xlwt.Workbook, pub_date: str | None) -> None:
         sh.write(3, 1, f" {pub_date} ")
 
 
-def _write_data_sheet(
-    wb: xlwt.Workbook, name: str, rows: list[tuple], blank_top: int = 3
-) -> None:
+def _write_data_sheet(wb: xlwt.Workbook, name: str, rows: list[tuple], blank_top: int = 3) -> None:
     sh = wb.add_sheet(name)
     for c, h in enumerate(HEADER):
         sh.write(blank_top, c, h)
@@ -63,9 +61,9 @@ def row(lei: str, isin: str, issuer: str, holder: str, date: str, pct: float) ->
 
 
 # Realistic values drawn from production data characteristics.
-LEI_A = "54930002KP75TLLLNO21"      # ACCIONA
-LEI_B = "959800R7QMXKF0NFMT29"      # AENA
-LEI_C = "95980020140005308793"      # LEI with case-variant ISINs in source
+LEI_A = "54930002KP75TLLLNO21"  # ACCIONA
+LEI_B = "959800R7QMXKF0NFMT29"  # AENA
+LEI_C = "95980020140005308793"  # LEI with case-variant ISINs in source
 
 ISIN_A = "ES0125220311"
 ISIN_B = "ES0105046017"

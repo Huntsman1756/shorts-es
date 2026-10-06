@@ -56,6 +56,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/shorts_es/cli/main.py" = ["B008"]  # typer.Option/Argument defaults are idiomatic
+"src/shorts_es/web/*.py" = ["B008"]      # fastapi.Depends defaults are idiomatic
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

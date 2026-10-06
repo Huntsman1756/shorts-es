@@ -4,14 +4,12 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from builder import H_UNICODE, ISIN_A, ISIN_C, LEI_A
 
 from shorts_es import constants
 from shorts_es.exceptions import ParseError, SchemaDriftError, UnsupportedWorkbookError
 from shorts_es.parser.models import Disclosure
 from shorts_es.parser.workbook import parse_workbook
-
-from builder import H_AQR, H_UNICODE, ISIN_A, ISIN_C, LEI_A, LEI_C
-from builder import build_workbook, row
 
 
 def test_parse_is_deterministic(workbook_bytes):
@@ -104,14 +102,16 @@ def test_id_stable_across_construction(workbook_bytes):
 
 # ------------------------------------------------------------ fail-closed
 
+
 def test_non_ole2_rejected():
     with pytest.raises(UnsupportedWorkbookError):
         parse_workbook(b"<html><table>not a workbook</table></html>")
 
 
 def test_bad_header_fails_closed(workbook_bytes):
-    import xlwt
     from io import BytesIO
+
+    import xlwt
 
     wb = xlwt.Workbook()
     sh = wb.add_sheet(constants.SHEET_METADATA)
@@ -131,8 +131,9 @@ def test_bad_header_fails_closed(workbook_bytes):
 
 
 def test_missing_sheet_fails_closed():
-    import xlwt
     from io import BytesIO
+
+    import xlwt
 
     wb = xlwt.Workbook()
     wb.add_sheet(constants.SHEET_METADATA)
@@ -144,9 +145,10 @@ def test_missing_sheet_fails_closed():
 
 
 def test_unexpected_nonempty_sheet_fails_closed():
-    import xlwt
     from io import BytesIO
-    from builder import CURRENT_A, SERIES_A, PREVIOUS_A
+
+    import xlwt
+    from builder import CURRENT_A, PREVIOUS_A, SERIES_A
 
     wb = xlwt.Workbook()
     wb.add_sheet(constants.SHEET_METADATA)
@@ -165,12 +167,10 @@ def test_unexpected_nonempty_sheet_fails_closed():
 
 def test_numeric_date_cell_fails_closed():
     """A date stored as a number cell instead of text must fail, not coerce."""
-    wb_bytes = build_workbook(
-        current=[], series=[], previous=[],
-    )
     # craft manually: put a float into the date column
-    import xlwt
     from io import BytesIO
+
+    import xlwt
     from builder import CURRENT_A, SERIES_A
 
     wb = xlwt.Workbook()
@@ -193,10 +193,10 @@ def test_numeric_date_cell_fails_closed():
 
 
 def test_negative_pct_fails():
-    import xlwt
     from io import BytesIO
-    from builder import CURRENT_A, SERIES_A
-    from builder import _write_data_sheet
+
+    import xlwt
+    from builder import CURRENT_A, SERIES_A, _write_data_sheet
 
     wb = xlwt.Workbook()
     wb.add_sheet(constants.SHEET_METADATA)

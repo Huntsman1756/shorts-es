@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ holder_name }} — shorts-es{% endblock %}
+{% block content %}
+<h1>{{ holder_name }}</h1>
+<p class="muted">Position holder · snapshot
+  <a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a></p>
+
+<h2>Current public positions</h2>
+<table>
+  <thead><tr><th>Issuer</th><th>ISIN</th><th class="num">Net short %</th><th>Position date</th><th></th></tr></thead>
+  <tbody>
+    {% for s in states if s.in_current_sheet %}
+    <tr>
+      <td><a href="/issuer/{{ s.isin }}">{{ s.issuer_name }}</a></td>
+      <td><code>{{ s.isin }}</code></td>
+      <td class="num">{{ s.position_pct }}</td>
+      <td>{{ s.position_date }}</td>
+      <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">source</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No currently published positions.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>All published disclosures</h2>
+<table>
+  <thead><tr><th>Date</th><th class="num">%</th><th>Issuer</th><th>ISIN</th><th></th></tr></thead>
+  <tbody>
+    {% for r in history %}
+    <tr>
+      <td>{{ r.position_date }}</td>
+      <td class="num">{{ r.position_pct }}</td>
+      <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
+      <td><code>{{ r.isin }}</code></td>
+      <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">source</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

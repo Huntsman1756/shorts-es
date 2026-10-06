@@ -26,8 +26,9 @@ GOLDEN_FILE = Path(__file__).parent / "golden_rows.jsonl"
 
 
 def _golden() -> list[dict]:
-    return [json.loads(line) for line in
-            GOLDEN_FILE.read_text("utf-8").splitlines() if line.strip()]
+    return [
+        json.loads(line) for line in GOLDEN_FILE.read_text("utf-8").splitlines() if line.strip()
+    ]
 
 
 def test_golden_file_has_enough_cases():
@@ -37,7 +38,9 @@ def test_golden_file_has_enough_cases():
 def test_golden_ids_are_stable():
     for g in _golden():
         d = Disclosure(
-            lei=g["lei"], isin=g["isin"], issuer_name=g["issuer_name"],
+            lei=g["lei"],
+            isin=g["isin"],
+            issuer_name=g["issuer_name"],
             holder_name=g["holder_name"],
             position_date=date.fromisoformat(g["position_date"]),
             position_pct=Decimal(g["position_pct"]),
@@ -65,8 +68,7 @@ def test_real_workbook_golden_rows():
         assert g["disclosure_id"] in seen, f"missing golden case {g['case']}"
         locs = seen[g["disclosure_id"]]
         assert any(
-            l.sheet_name == g["sheet"] and l.row_number == g["row_number"]
-            for l in locs
+            loc.sheet_name == g["sheet"] and loc.row_number == g["row_number"] for loc in locs
         ), f"case {g['case']}: expected {g['sheet']} row {g['row_number']}"
 
 

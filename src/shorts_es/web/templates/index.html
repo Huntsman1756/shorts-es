@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <form action="/search" method="get" class="search">
+    <input type="search" name="q" value="{{ q or '' }}" autofocus
+           placeholder="ISIN, LEI, issuer or holder" size="40">
+    <button type="submit">Search</button>
+  </form>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  {% if candidates %}
+    <p>Ambiguous identifier — did you mean:</p>
+    <ul>{% for c in candidates %}<li>{{ c }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if issuer_refs %}
+    <p>Several securities match — pick one:</p>
+    <ul>{% for r in issuer_refs %}
+      <li><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }} ({{ r.isin }})</a></li>
+    {% endfor %}</ul>
+  {% endif %}
+</section>
+
+<section class="grid">
+  <div class="panel">
+    <h2>Dataset</h2>
+    <dl class="kv">
+      <dt>Latest snapshot</dt>
+      <dd>{% if data.latest_snapshot %}<a href="/snapshots/{{ data.latest_snapshot.snapshot_sha256 }}"><code>{{ data.latest_snapshot.snapshot_sha256[:16] }}…</code></a>{% else %}—{% endif %}</dd>
+      <dt>Retrieved</dt>
+      <dd>{{ data.latest_snapshot.retrieved_at if data.latest_snapshot else "—" }}</dd>
+      <dt>Publication date (source)</dt>
+      <dd>{{ data.latest_snapshot.publication_date if data.latest_snapshot else "—" }}</dd>
+      <dt>Disclosures</dt><dd>{{ data.stats.disclosures or 0 }}</dd>
+      <dt>Issuers (ISIN)</dt><dd>{{ data.stats.issuers or 0 }}</dd>
+      <dt>Holders</dt><dd>{{ data.stats.holders or 0 }}</dd>
+      <dt>Pairs</dt><dd>{{ data.stats.pairs or 0 }}</dd>
+      <dt>Position dates</dt><dd>{{ data.stats.earliest or "—" }} → {{ data.stats.latest or "—" }}</dd>
+    </dl>
+  </div>
+  <div class="panel">
+    <h2>Verification</h2>
+    {% if data.verification %}
+    <p class="verify {{ 'pass' if data.verification.result == 'PASS' else 'fail' }}">
+      {{ data.verification.result }}</p>
+    <dl class="kv">
+      <dt>Pairs checked</dt><dd>{{ data.verification.pairs_checked }}</dd>
+      <dt>Exact matches</dt><dd>{{ data.verification.matched }}</dd>
+      <dt>Verified at</dt><dd>{{ data.verification.verified_at }}</dd>
+    </dl>
+    {% else %}
+    <p class="muted">Not run yet. Run <code>shorts-es verify</code>.</p>
+    {% endif %}
+    <p class="muted small">Verification reconstructs the Current sheet from the
+    Series sheet and compares both, cell by cell.</p>
+  </div>
+</section>
+{% endblock %}
