@@ -9,7 +9,7 @@ Initial release.
 - `shorts-es sync`: fetch the CNMV `NetShortPositions.xls` workbook into
   immutable, SHA-256-addressed snapshots with full HTTP provenance;
   `--file` for offline ingest.
-- Deterministic BIFF8 parser (`cnmv-nsp-parser/1`) producing canonical
+- Deterministic BIFF8 parser (`cnmv-nsp-parser/2`) producing canonical
   disclosures with content-addressed ids; `Decimal` percentages; ISIN
   case normalization.
 - Schema fingerprinting with fail-closed `SCHEMA_DRIFT` detection.
@@ -31,4 +31,4 @@ Initial release.
 
 - First known schema established from snapshot
   `6d9ea43b460bca3cb321018bd4da6b5e0708105a8e1d5505bac5fb8435cba5e9`
-  (2026-10-06). See `SOURCE-CHANGELOG.md` and `docs/source-format.md`.
+  (2026-10-06). See `docs/source-changelog.md` and `docs/source-format.md`.

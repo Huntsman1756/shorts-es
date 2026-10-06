@@ -75,10 +75,12 @@ surrounding spaces.
 - `0.00` appears only in Previous, always as the **latest row of its pair**
   (93 instances): an explicit closing notification.
 - No negative values.
-- **Unit audit (2026-10-06):** every numeric cell in all data sheets uses
-  the `General` number format — displayed value equals stored value
-  exactly; see `docs/audit-percentage-unit.md`. The parser requires
-  `General` on the pct column and fails closed on any other format.
+- **Unit semantics (audited 2026-10-06):** every numeric cell in all
+  data sheets uses the `General` number format, so the displayed value
+  is the stored value verbatim — `0.007` really is 0,007 %. The parser
+  requires `General` on the pct column and fails closed on any other
+  format, since a real percent format would decouple stored vs
+  displayed semantics.
 
 ## Sheet semantics (verified by cross-sheet analysis)
 

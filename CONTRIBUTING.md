@@ -9,9 +9,12 @@
 3. **Fail closed.** Unexpected source structure is `SCHEMA_DRIFT`, never
    a best-effort parse.
 4. **`Decimal`, never `float`, for percentages.**
-5. **No LLMs** anywhere in `source → parse → canonical → reconstruction`.
+5. **Deterministic correctness path.** Parsing, canonicalization and
+   state reconstruction must remain deterministic; probabilistic
+   inference is not permitted anywhere in
+   `source → parse → canonical → reconstruction`.
 6. Keep it small: SQLite, stdlib-first, no new dependencies without an
-   articulated reason in an ADR.
+   articulated reason in docs/.
 
 ## Setup
 
@@ -37,10 +40,10 @@ uv run ruff format --check src tests
 
 If CNMV changes the workbook, `sync` fails with `SCHEMA_DRIFT`. The
 process is: inspect the new file, document the change in
-`SOURCE-CHANGELOG.md`, update `source/schema.py` + parser, bump
+`docs/source-changelog.md`, update `source/schema.py` + parser, bump
 `PARSER_VERSION`, add regression tests.
 
 ## Commits
 
-Small, semantic commits (`feat:`, `fix:`, `test:`, `docs:`, `ci:`,
-`probe:`). The why, not the what.
+Small, semantic commits — `feat:`, `fix:`, `docs:`, `test:`,
+`refactor:`, `ci:`, `chore:`. The why, not the what.

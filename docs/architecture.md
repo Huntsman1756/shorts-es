@@ -64,7 +64,8 @@ functions the CLI calls.
 $SHORTS_ES_DATA_DIR (platform default: XDG/AppData)
 ├── shorts-es.db            SQLite ledger (WAL)
 ├── snapshots/<sha256>.xls  raw bytes, immutable
-└── snapshots.jsonl         append-only snapshot manifest
+└── snapshots.jsonl         append-only runtime snapshot manifest
+# repo also ships data/reference-snapshots.jsonl (release-tied refs only)
 ```
 
 ## Tables

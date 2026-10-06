@@ -54,7 +54,7 @@ Locations:
 
 ## Snapshot manifest
 
-`data/snapshots.jsonl` (repo) and `$SHORTS_ES_DATA_DIR/snapshots.jsonl`
+`data/reference-snapshots.jsonl` (repo) and `$SHORTS_ES_DATA_DIR/snapshots.jsonl`
 (local) record, per snapshot: sha256, retrieved_at, source_url, size,
 etag, last_modified, publication_date, parser_version,
 schema_fingerprint and per-sheet row counts. Raw bytes are not

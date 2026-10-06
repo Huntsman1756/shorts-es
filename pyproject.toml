@@ -26,6 +26,12 @@ dependencies = [
 [project.scripts]
 shorts-es = "shorts_es.cli.main:app"
 
+[project.urls]
+Homepage = "https://github.com/Huntsman1756/shorts-es"
+Repository = "https://github.com/Huntsman1756/shorts-es"
+Issues = "https://github.com/Huntsman1756/shorts-es/issues"
+Changelog = "https://github.com/Huntsman1756/shorts-es/blob/main/CHANGELOG.md"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3,<9",

@@ -30,7 +30,7 @@ Consequently:
   user downloads their own copy from CNMV via `shorts-es sync`, keeping a
   private, content-addressed snapshot on their machine.
 - The repository publishes only **metadata** about snapshots
-  (`data/snapshots.jsonl`): SHA-256, retrieval timestamps, sizes, row
+  (`data/reference-snapshots.jsonl`): SHA-256, retrieval timestamps, sizes, row
   counts and schema fingerprints — sufficient for independent
   verification, not a copy of the data.
 - Individual disclosure values (positions, dates, holders) are reported
@@ -43,7 +43,7 @@ Consequently:
 CNMV may change the file's structure or contents at any time. shorts-es
 detects structural change via the schema fingerprint and **fails closed**
 rather than parse under a stale contract; changes are logged in
-`SOURCE-CHANGELOG.md`.
+`docs/source-changelog.md`.
 
 ## No warranty
 
