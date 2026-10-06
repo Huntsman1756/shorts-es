@@ -171,7 +171,7 @@ def test_numeric_date_cell_fails_closed():
     from io import BytesIO
 
     import xlwt
-    from builder import CURRENT_A, SERIES_A
+    from builder import CURRENT_A, PREVIOUS_A, SERIES_A
 
     wb = xlwt.Workbook()
     wb.add_sheet(constants.SHEET_METADATA)
@@ -185,7 +185,7 @@ def test_numeric_date_cell_fails_closed():
     for c, v in enumerate(r):
         sh.write(4, c, v)
     _write_data_sheet(wb, constants.SHEET_SERIES, SERIES_A)
-    _write_data_sheet(wb, constants.SHEET_PREVIOUS, [])
+    _write_data_sheet(wb, constants.SHEET_PREVIOUS, PREVIOUS_A)
     buf = BytesIO()
     wb.save(buf)
     with pytest.raises(ParseError):
@@ -196,7 +196,7 @@ def test_negative_pct_fails():
     from io import BytesIO
 
     import xlwt
-    from builder import CURRENT_A, SERIES_A, _write_data_sheet
+    from builder import CURRENT_A, PREVIOUS_A, SERIES_A, _write_data_sheet
 
     wb = xlwt.Workbook()
     wb.add_sheet(constants.SHEET_METADATA)
@@ -208,7 +208,7 @@ def test_negative_pct_fails():
     for c, v in enumerate(r):
         sh.write(4, c, v)
     _write_data_sheet(wb, constants.SHEET_SERIES, SERIES_A)
-    _write_data_sheet(wb, constants.SHEET_PREVIOUS, [])
+    _write_data_sheet(wb, constants.SHEET_PREVIOUS, PREVIOUS_A)
     buf = BytesIO()
     wb.save(buf)
     with pytest.raises(ParseError):

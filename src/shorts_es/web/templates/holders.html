@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Holders — shorts-es{% endblock %}
+{% block content %}
+<h1>Holders</h1>
+<p class="muted">{{ holders | length }} holders with currently published
+positions · snapshot
+<a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a></p>
+<table>
+  <thead><tr><th>Holder</th><th class="num">Positions</th><th class="num">Issuers</th><th class="num">Disclosed %</th><th>Last position</th></tr></thead>
+  <tbody>
+    {% for h in holders %}
+    <tr>
+      <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
+      <td class="num">{{ h.positions }}</td>
+      <td class="num">{{ h.issuers }}</td>
+      <td class="num">{{ h.disclosed_total }}</td>
+      <td>{{ h.last_position_date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

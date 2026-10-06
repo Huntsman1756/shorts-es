@@ -75,6 +75,10 @@ surrounding spaces.
 - `0.00` appears only in Previous, always as the **latest row of its pair**
   (93 instances): an explicit closing notification.
 - No negative values.
+- **Unit audit (2026-10-06):** every numeric cell in all data sheets uses
+  the `General` number format — displayed value equals stored value
+  exactly; see `docs/audit-percentage-unit.md`. The parser requires
+  `General` on the pct column and fails closed on any other format.
 
 ## Sheet semantics (verified by cross-sheet analysis)
 
@@ -89,12 +93,15 @@ surrounding spaces.
   contains **1 949 duplicated physical rows** (same pair/date/value on
   several rows). Duplicates are a source quirk; they collapse to one
   canonical disclosure and keep multiple provenance rows.
+- Two distinct termination mechanisms exist and are kept apart:
+  explicit `0.00` closing notifications (always pair-terminal, 93 found)
+  and silent exits — 661 pairs leave publication **without** any closing
+  notification. The latter are `PUBLIC_POSITION_NO_LONGER_CURRENT`,
+  never "closed".
 - Union of the three sheets: **12 252 unique canonical disclosures**;
   90 ISINs, 80 LEIs, 228 holders, 817 pairs.
 - Two pairs appear in Series only under case-typo ISINs and merge into
   Current pairs after ISIN normalization.
-- 661 pairs disappear from publication **without** a closing `0.00`
-  notification — absence is not evidence of closure.
 - Scope is not ES-only: at least one `GB` ISIN appears (HBX Group
   International PLC) — CNMV lists instruments under its competence.
 - No `(pair, date)` has two different values anywhere in the workbook:

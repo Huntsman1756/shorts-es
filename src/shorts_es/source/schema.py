@@ -62,13 +62,23 @@ def validate_schema(info: WorkbookInfo) -> None:
             )
         if sheet.nrows <= constants.HEADER_ROW_INDEX:
             raise SchemaDriftError(f"sheet {name!r}: contains no data rows")
+        # The percentage column must use the General number format on every
+        # numeric cell: General displays the stored value verbatim, which is
+        # what makes `repr(cell.value)` the published figure. Any other
+        # format (e.g. a real '0.00%' percent format) would decouple stored
+        # value from displayed semantics and must be audited by a human.
+        if sheet.pct_formats != ("General",):
+            raise SchemaDriftError(
+                f"sheet {name!r}: percentage column uses number formats "
+                f"{sheet.pct_formats!r} (expected 'General' only) - "
+                "displayed semantics unverified, audit required"
+            )
 
     # Unknown *extra* sheets are only tolerated when completely empty
-    # (the workbook currently ships Hoja2..Hoja7 empty).
+    # (the workbook currently ships Hoja2..Hoja7 empty). They only affect
+    # the physical fingerprint, never the semantic one.
     for s in info.sheets:
-        if s.name not in (constants.SHEET_METADATA, *constants.DATA_SHEETS) and (
-            s.nrows != 0 or s.ncols != 0
-        ):
+        if s.name not in (constants.SHEET_METADATA, *constants.DATA_SHEETS) and (not s.is_padding):
             raise SchemaDriftError(
                 f"unexpected non-empty sheet {s.name!r} " f"({s.nrows}x{s.ncols})"
             )

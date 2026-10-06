@@ -23,5 +23,9 @@ inspection (G0).
 **Rows:** Current 63, Series 1 586, Previous 13 094 (12 252 unique canonical
 disclosures; Previous contains duplicated physical rows).
 
-**Action:** Parser `cnmv-nsp-parser/1` established. Schema fingerprint:
-`fb69b9f9c83be275e9cf6df215b44adf732383a3e400b1687f6f3a1b86302d2c`.
+**Action:** Parser `cnmv-nsp-parser/2` established (v2 adds the
+percentage-format contract and semantic/physical fingerprint split after
+the percentage-unit audit). Semantic schema fingerprint:
+`69f30558cf65a7d29ef5b95870ba9642d3ad0eebc618936798dd3448b44da6ef`.
+Physical fingerprint:
+`c800aecbea27d44279f502596372528f079476e0995b9dba018b167239facef1`.

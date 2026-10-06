@@ -62,7 +62,7 @@ def test_sync_preserves_http_metadata(config, workbook_path):
     conn = db.open_db(config.db_path)
     snap = conn.execute("SELECT * FROM snapshot WHERE snapshot_sha256 = ?", (r.sha256,)).fetchone()
     assert snap["source_url"].endswith("NetShortPositions.xls")
-    assert snap["parser_version"] == "cnmv-nsp-parser/1"
+    assert snap["parser_version"] == "cnmv-nsp-parser/2"
     assert snap["status"] == "parsed"
     assert snap["publication_date"] == "2026-10-06"
     conn.close()

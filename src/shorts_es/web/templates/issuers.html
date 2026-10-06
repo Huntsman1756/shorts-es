@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Issuers — shorts-es{% endblock %}
+{% block content %}
+<h1>Issuers</h1>
+<p class="muted">{{ issuers | length }} issuers with currently published
+positions · snapshot
+<a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a></p>
+<table>
+  <thead><tr><th>Issuer</th><th>ISIN</th><th>LEI</th><th class="num">Disclosed %</th><th class="num">Holders</th><th>Last position</th></tr></thead>
+  <tbody>
+    {% for i in issuers %}
+    <tr>
+      <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
+      <td><code>{{ i.isin }}</code></td>
+      <td><code>{{ i.lei }}</code></td>
+      <td class="num">{{ i.disclosed_total }}</td>
+      <td class="num">{{ i.funds }}</td>
+      <td>{{ i.last_position_date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="muted small">Disclosed % = sum of publicly disclosed individual
+positions on the source Current sheet.
+<strong>Not total short interest.</strong></p>
+{% endblock %}

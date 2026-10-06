@@ -138,3 +138,27 @@ def test_holder_states(conn):
     by_isin = {s.isin: s for s in states}
     assert by_isin["ES0118594417"].position_pct == Decimal("1.49")
     assert by_isin["ES0118594417"].in_current_sheet
+
+
+def test_state_closed_explicitly_vs_no_longer_current(conn):
+    """Two distinct termination mechanisms, never conflated."""
+    sha = _latest_sha(conn)
+    cur = reconstruction.current_pair_keys(conn, sha)
+    states = reconstruction.issuer_states(conn, "ES0125220311", current_pairs=cur)
+    by_holder = {s.holder_name: s for s in states}
+    mw = by_holder["Marshall Wace LLP"]
+    assert mw.position_pct == 0
+    assert mw.state == DisclosureState.PUBLIC_POSITION_CLOSED_EXPLICITLY
+    glg = by_holder["GLG Partners LP"]
+    assert glg.position_pct > 0 and not glg.in_current_sheet
+    assert glg.state == DisclosureState.PUBLIC_POSITION_NO_LONGER_CURRENT
+    br = by_holder["BlackRock Investment Management (UK) Limited"]
+    assert br.state == DisclosureState.PUBLIC_POSITION_OPEN
+
+
+def test_state_without_current_context(conn):
+    """Without current-sheet context, a nonzero latest is OPEN (we do not
+    claim 'no longer current' for an effective-time reconstruction)."""
+    states = reconstruction.issuer_states(conn, "ES0125220311")
+    glg = next(s for s in states if s.holder_name == "GLG Partners LP")
+    assert glg.state == DisclosureState.PUBLIC_POSITION_OPEN

@@ -94,6 +94,7 @@ def sync(config: Config, file: str | None = None, url: str | None = None) -> Syn
                 else None,
                 "parser_version": constants.PARSER_VERSION,
                 "schema_fingerprint": info.fingerprint,
+                "physical_fingerprint": info.physical_fingerprint,
                 "status": status,
                 "rows": {s.name: s.nrows for s in info.sheets},
             },

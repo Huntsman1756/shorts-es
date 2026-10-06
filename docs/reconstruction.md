@@ -29,10 +29,11 @@ No thresholds, no inference. Verified properties of the source:
 
 ## Derived states
 
-| Latest published value | State |
-|------------------------|-------|
-| `pct > 0` | `PUBLIC_POSITION_OPEN` |
-| `pct = 0` | `PUBLIC_POSITION_ZERO` |
+| Latest published value / membership | State |
+|-------------------------------------|-------|
+| `pct > 0` and in Current sheet | `PUBLIC_POSITION_OPEN` |
+| `pct = 0` (explicit closing notification) | `PUBLIC_POSITION_CLOSED_EXPLICITLY` |
+| `pct > 0` but absent from Current sheet | `PUBLIC_POSITION_NO_LONGER_CURRENT` |
 | no disclosure for the identifier | `NO_DATA` |
 
 `above_public_threshold = pct >= 0.5` is reported separately and is *not*
@@ -83,6 +84,6 @@ Two levels, reported separately:
   `PUBLIC_POSITION_OPEN`, `above_public_threshold = true`.
 
 `Marshall Wace LLP` / `ES0125220311` (hypothetical, matching the AKO
-pattern in real data): latest = `2021-02-19 0.00` → `PUBLIC_POSITION_ZERO`
+pattern in real data): latest = `2021-02-19 0.00` → `PUBLIC_POSITION_CLOSED_EXPLICITLY`
 — an explicit closing notification, distinct from a pair that merely
-disappeared.
+disappeared (`PUBLIC_POSITION_NO_LONGER_CURRENT`).

@@ -12,20 +12,20 @@ Status of every release gate, with where the evidence lives.
 | Headers enumerated | exact 6 columns, row index 3 |
 | Cell types understood | 5 text cols + 1 numeric; dates are *text* |
 | Dates understood | padded ` YYYY-MM-DD ` text, all parse |
-| Percentages understood | `General`-format doubles, exact `repr`, 0–3 decimals |
+| Percentages understood | `General`-format doubles, exact `repr`, 0–3 decimals — full cell-format audit: `docs/audit-percentage-unit.md` (19/19 cells: displayed == canonical) |
 | LEI confirmed | column 0, all 20-char valid |
 | ISIN confirmed | column 1, valid after case normalization |
 | Issuer/holder confirmed | columns 2/3 |
 | Current semantics | latest-per-pair, ⊆ Series — verified 63/63 |
 | Series semantics | complete series of currently-listed pairs |
-| Previous semantics | archive incl. closed pairs; duplicated rows |
+| Previous semantics | archive incl. closed pairs; duplicated rows; two termination mechanisms kept apart (`CLOSED_EXPLICITLY` vs `NO_LONGER_CURRENT`, 661 silent exits) |
 | ≥20 golden rows | `tests/golden/golden_rows.jsonl` (23 cases) |
 
 ## G1 — Reproducibility ✅
 
 Raw SHA-256 addressed snapshots; deterministic parser
 (`tests/unit/test_parser.py`); stable content ids (Hypothesis);
-schema fingerprint `fb69b9f9…` recorded; second sync → `NO_CHANGE`;
+semantic+physical schema fingerprints recorded (semantic drives SCHEMA_DRIFT; pct-column `General` format contract enforced); second sync → `NO_CHANGE`;
 manifest `data/snapshots.jsonl`; provenance chain to row level.
 
 ## G2 — Semantics ✅

@@ -41,9 +41,15 @@ def ingest_snapshot(
     (already parsed; nothing to do). All writes are idempotent.
     """
     existing = conn.execute(
-        "SELECT status FROM snapshot WHERE snapshot_sha256 = ?", (stored.sha256,)
+        "SELECT status, parser_version FROM snapshot WHERE snapshot_sha256 = ?",
+        (stored.sha256,),
     ).fetchone()
-    if existing is not None and existing["status"] == "parsed" and status == "parsed":
+    if (
+        existing is not None
+        and existing["status"] == "parsed"
+        and status == "parsed"
+        and existing["parser_version"] == _parser_version()
+    ):
         return "exists"
 
     f = stored.fetch
@@ -57,8 +63,8 @@ def ingest_snapshot(
                        snapshot_sha256, retrieved_at, source_url, http_status,
                        content_type, content_length, etag, last_modified,
                        publication_date, parser_version, schema_fingerprint,
-                       status, raw_path)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       physical_fingerprint, status, raw_path)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     stored.sha256,
                     _iso(stored.retrieved_at),
@@ -71,6 +77,7 @@ def ingest_snapshot(
                     publication_date,
                     _parser_version(),
                     info.fingerprint,
+                    info.physical_fingerprint,
                     status,
                     str(stored.raw_path),
                 ),
@@ -87,7 +94,8 @@ def ingest_snapshot(
                 """UPDATE snapshot SET retrieved_at = ?, source_url = ?,
                        http_status = ?, content_type = ?, content_length = ?,
                        etag = ?, last_modified = ?, publication_date = ?,
-                       parser_version = ?, schema_fingerprint = ?, status = ?
+                       parser_version = ?, schema_fingerprint = ?,
+                       physical_fingerprint = ?, status = ?
                    WHERE snapshot_sha256 = ?""",
                 (
                     _iso(stored.retrieved_at),
@@ -100,6 +108,7 @@ def ingest_snapshot(
                     publication_date,
                     _parser_version(),
                     info.fingerprint,
+                    info.physical_fingerprint,
                     status,
                     stored.sha256,
                 ),
@@ -405,6 +414,131 @@ def current_sheet_pairs(conn: sqlite3.Connection, sha256: str) -> list[sqlite3.R
            WHERE sd.snapshot_sha256 = ? AND sd.sheet_name = ?""",
         (sha256, constants.SHEET_CURRENT),
     ).fetchall()
+
+
+def _canonical_pct_total(pcts: Iterable[str]) -> Decimal:
+    return sum(Decimal(p) for p in pcts)
+
+
+def _pct_str(total: Decimal) -> str:
+    if total == total.to_integral():
+        return str(total.quantize(Decimal(1)))
+    return format(total.normalize(), "f")
+
+
+def issuer_current_ranking(conn: sqlite3.Connection, snapshot_sha256: str) -> list[dict]:
+    """Per-ISIN aggregation over the snapshot's Current sheet only.
+
+    disclosed_total = exact Decimal sum of published individual positions
+    (NOT total short interest). funds = number of holder pairs in Current.
+    """
+    from .. import constants
+
+    rows = conn.execute(
+        """SELECT d.isin, d.lei, d.issuer_name, d.holder_name,
+                  d.position_pct, d.position_date
+           FROM disclosure d
+           JOIN snapshot_disclosure sd ON sd.disclosure_id = d.disclosure_id
+           WHERE sd.snapshot_sha256 = ? AND sd.sheet_name = ?""",
+        (snapshot_sha256, constants.SHEET_CURRENT),
+    ).fetchall()
+    by_isin: dict[str, dict] = {}
+    for r in rows:
+        e = by_isin.setdefault(
+            r["isin"],
+            {
+                "isin": r["isin"],
+                "lei": r["lei"],
+                "issuer_name": r["issuer_name"],
+                "funds": 0,
+                "pcts": [],
+                "last_position_date": "",
+            },
+        )
+        e["funds"] += 1
+        e["pcts"].append(r["position_pct"])
+        e["last_position_date"] = max(e["last_position_date"], r["position_date"])
+    out = []
+    for e in by_isin.values():
+        total = _canonical_pct_total(e.pop("pcts"))
+        e["disclosed_total"] = _pct_str(total)
+        out.append(e)
+    out.sort(key=lambda e: (-float(e["disclosed_total"]), e["issuer_name"]))
+    return out
+
+
+def holder_current_ranking(conn: sqlite3.Connection, snapshot_sha256: str) -> list[dict]:
+    """Per-holder aggregation over the snapshot's Current sheet."""
+    from .. import constants
+
+    rows = conn.execute(
+        """SELECT d.holder_name, d.isin, d.position_pct, d.position_date
+           FROM disclosure d
+           JOIN snapshot_disclosure sd ON sd.disclosure_id = d.disclosure_id
+           WHERE sd.snapshot_sha256 = ? AND sd.sheet_name = ?""",
+        (snapshot_sha256, constants.SHEET_CURRENT),
+    ).fetchall()
+    by_holder: dict[str, dict] = {}
+    for r in rows:
+        e = by_holder.setdefault(
+            r["holder_name"],
+            {
+                "holder_name": r["holder_name"],
+                "positions": 0,
+                "isins": set(),
+                "pcts": [],
+                "last_position_date": "",
+            },
+        )
+        e["positions"] += 1
+        e["isins"].add(r["isin"])
+        e["pcts"].append(r["position_pct"])
+        e["last_position_date"] = max(e["last_position_date"], r["position_date"])
+    out = []
+    for e in by_holder.values():
+        total = _canonical_pct_total(e.pop("pcts"))
+        e["issuers"] = len(e.pop("isins"))
+        e["disclosed_total"] = _pct_str(total)
+        out.append(e)
+    out.sort(key=lambda e: (-e["positions"], -float(e["disclosed_total"]), e["holder_name"]))
+    return out
+
+
+def latest_current_rows(
+    conn: sqlite3.Connection, snapshot_sha256: str, limit: int = 12
+) -> list[sqlite3.Row]:
+    """Most recent position dates on the Current sheet (publication moves)."""
+    from .. import constants
+
+    return conn.execute(
+        """SELECT d.* FROM disclosure d
+           JOIN snapshot_disclosure sd ON sd.disclosure_id = d.disclosure_id
+           WHERE sd.snapshot_sha256 = ? AND sd.sheet_name = ?
+           ORDER BY d.position_date DESC, d.isin
+           LIMIT ?""",
+        (snapshot_sha256, constants.SHEET_CURRENT, limit),
+    ).fetchall()
+
+
+def current_total_pct(conn: sqlite3.Connection, snapshot_sha256: str, isin: str) -> str | None:
+    """Exact disclosed total for one ISIN on the Current sheet, computed
+    with Decimal over the canonical strings (no float)."""
+    from decimal import Decimal
+
+    from .. import constants
+
+    rows = conn.execute(
+        """SELECT d.position_pct FROM disclosure d
+           JOIN snapshot_disclosure sd ON sd.disclosure_id = d.disclosure_id
+           WHERE sd.snapshot_sha256 = ? AND sd.sheet_name = ? AND d.isin = ?""",
+        (snapshot_sha256, constants.SHEET_CURRENT, isin),
+    ).fetchall()
+    if not rows:
+        return None
+    total = sum(Decimal(r["position_pct"]) for r in rows)
+    if total == total.to_integral():
+        return str(total.quantize(Decimal(1)))
+    return format(total.normalize(), "f")
 
 
 def first_observed_at(conn: sqlite3.Connection) -> str | None:

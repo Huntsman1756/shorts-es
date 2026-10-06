@@ -11,7 +11,7 @@ SOURCE_AUTHORITY = "CNMV"
 SOURCE_WORKBOOK_NAME = "NetShortPositions.xls"
 
 # Parser contract version. Bump when parsing semantics change.
-PARSER_VERSION = "cnmv-nsp-parser/1"
+PARSER_VERSION = "cnmv-nsp-parser/2"
 
 # OLE2 / Compound File Binary magic (real BIFF .xls container).
 OLE2_MAGIC = bytes.fromhex("d0cf11e0a1b11ae1")

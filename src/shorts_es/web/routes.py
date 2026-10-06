@@ -191,6 +191,26 @@ def changes(since: date, conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     }
 
 
+@api.get("/issuers")
+def issuers_ranking(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    snap = dataset_or_404(conn)
+    return {
+        "snapshot_sha256": snap["snapshot_sha256"],
+        "issuers": repo.issuer_current_ranking(conn, snap["snapshot_sha256"]),
+        "note": "disclosed_total = sum of published individual positions. "
+        "Not total short interest.",
+    }
+
+
+@api.get("/holders")
+def holders_ranking(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    snap = dataset_or_404(conn)
+    return {
+        "snapshot_sha256": snap["snapshot_sha256"],
+        "holders": repo.holder_current_ranking(conn, snap["snapshot_sha256"]),
+    }
+
+
 @api.get("/snapshots")
 def snapshots(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     rows = repo.list_snapshots(conn)
@@ -264,7 +284,36 @@ def _base_ctx(request: Request, conn) -> dict:
 
 @pages.get("/")
 def index(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
-    return _t(request).TemplateResponse(request, "index.html", _base_ctx(request, conn))
+    ctx = _base_ctx(request, conn)
+    snap = repo.latest_snapshot(conn)
+    if snap:
+        sha = snap["snapshot_sha256"]
+        ctx.update(
+            {
+                "top_issuers": repo.issuer_current_ranking(conn, sha)[:10],
+                "top_holders": repo.holder_current_ranking(conn, sha)[:10],
+                "latest_rows": repo.latest_current_rows(conn, sha, limit=12),
+            }
+        )
+    return _t(request).TemplateResponse(request, "index.html", ctx)
+
+
+@pages.get("/issuers")
+def issuers_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    snap = dataset_or_404(conn)
+    ctx = _base_ctx(request, conn)
+    ctx["issuers"] = repo.issuer_current_ranking(conn, snap["snapshot_sha256"])
+    ctx["snapshot"] = snap
+    return _t(request).TemplateResponse(request, "issuers.html", ctx)
+
+
+@pages.get("/holders")
+def holders_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    snap = dataset_or_404(conn)
+    ctx = _base_ctx(request, conn)
+    ctx["holders"] = repo.holder_current_ranking(conn, snap["snapshot_sha256"])
+    ctx["snapshot"] = snap
+    return _t(request).TemplateResponse(request, "holders.html", ctx)
 
 
 @pages.get("/search")

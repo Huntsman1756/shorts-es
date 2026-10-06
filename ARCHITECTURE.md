@@ -50,7 +50,7 @@ functions the CLI calls.
 |-------|--------|----------------|
 | Fetch | `source/fetch.py` | Download bytes + capture HTTP provenance |
 | Snapshot | `source/snapshot.py` | Immutable, content-addressed raw storage |
-| Inspect | `source/inspect.py` | Sheet inventory + schema fingerprint |
+| Inspect | `source/inspect.py` | Sheet inventory + semantic & physical schema fingerprints |
 | Schema | `source/schema.py` | Contract validation, fail closed |
 | Parse | `parser/` | BIFF rows → canonical `Disclosure` (Decimal, strict types) |
 | Store | `storage/` | SQLite ledger; idempotent ingest; provenance bridge |

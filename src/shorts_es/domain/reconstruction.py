@@ -29,13 +29,15 @@ class PairState:
     position_date: date
     position_pct: Decimal
     disclosure_id: str
-    in_current_sheet: bool  # present in latest snapshot's Current sheet
+    in_current_sheet: bool | None  # None = current-membership unknown in context
 
     @property
     def state(self) -> DisclosureState:
-        if self.position_pct > 0:
-            return DisclosureState.PUBLIC_POSITION_OPEN
-        return DisclosureState.PUBLIC_POSITION_ZERO
+        if self.position_pct == 0:
+            return DisclosureState.PUBLIC_POSITION_CLOSED_EXPLICITLY
+        if self.in_current_sheet is False:
+            return DisclosureState.PUBLIC_POSITION_NO_LONGER_CURRENT
+        return DisclosureState.PUBLIC_POSITION_OPEN
 
     @property
     def above_public_threshold(self) -> bool:
@@ -85,7 +87,9 @@ def issuer_states(
                 position_date=date.fromisoformat(row["position_date"]),
                 position_pct=Decimal(row["position_pct"]),
                 disclosure_id=row["disclosure_id"],
-                in_current_sheet=(lei, i, holder) in (current_pairs or set()),
+                in_current_sheet=None
+                if current_pairs is None
+                else (lei, i, holder) in current_pairs,
             )
         )
     result.sort(key=lambda p: (-p.position_pct, p.holder_name))
@@ -114,7 +118,7 @@ def holder_states(
                 position_date=date.fromisoformat(row["position_date"]),
                 position_pct=Decimal(row["position_pct"]),
                 disclosure_id=row["disclosure_id"],
-                in_current_sheet=(lei, i, h) in (current_pairs or set()),
+                in_current_sheet=None if current_pairs is None else (lei, i, h) in current_pairs,
             )
         )
     result.sort(key=lambda p: (p.issuer_name, -p.position_pct))

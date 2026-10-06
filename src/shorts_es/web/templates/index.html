@@ -49,8 +49,67 @@
     {% else %}
     <p class="muted">Not run yet. Run <code>shorts-es verify</code>.</p>
     {% endif %}
-    <p class="muted small">Verification reconstructs the Current sheet from the
-    Series sheet and compares both, cell by cell.</p>
+    <p class="muted small">Verification independently reconstructs every
+    position in the source Current sheet from the disclosure series.</p>
   </div>
 </section>
+
+{% if top_issuers %}
+<h2>Most disclosed issuers</h2>
+<p class="muted small">By sum of currently published positions.
+<a href="/issuers">All issuers →</a></p>
+<table>
+  <thead><tr><th>Issuer</th><th>ISIN</th><th class="num">Disclosed %</th><th class="num">Holders</th><th>Last position</th></tr></thead>
+  <tbody>
+    {% for i in top_issuers %}
+    <tr>
+      <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
+      <td><code>{{ i.isin }}</code></td>
+      <td class="num">{{ i.disclosed_total }}</td>
+      <td class="num">{{ i.funds }}</td>
+      <td>{{ i.last_position_date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if top_holders %}
+<h2>Most active holders</h2>
+<p class="muted small">By number of currently published positions.
+<a href="/holders">All holders →</a></p>
+<table>
+  <thead><tr><th>Holder</th><th class="num">Positions</th><th class="num">Issuers</th><th class="num">Disclosed %</th><th>Last position</th></tr></thead>
+  <tbody>
+    {% for h in top_holders %}
+    <tr>
+      <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
+      <td class="num">{{ h.positions }}</td>
+      <td class="num">{{ h.issuers }}</td>
+      <td class="num">{{ h.disclosed_total }}</td>
+      <td>{{ h.last_position_date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if latest_rows %}
+<h2>Latest published positions</h2>
+<p class="muted small">Most recent position dates on the Current sheet.</p>
+<table>
+  <thead><tr><th>Position date</th><th>Issuer</th><th>Holder</th><th class="num">%</th><th></th></tr></thead>
+  <tbody>
+    {% for r in latest_rows %}
+    <tr>
+      <td>{{ r.position_date }}</td>
+      <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
+      <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
+      <td class="num">{{ r.position_pct }}</td>
+      <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">source</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endblock %}

@@ -6,7 +6,7 @@ import sqlite3
 from importlib import resources
 from pathlib import Path
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 
 def connect(db_path: str | Path) -> sqlite3.Connection:
@@ -20,8 +20,12 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
 def migrate(conn: sqlite3.Connection) -> None:
     sql = resources.files("shorts_es.storage").joinpath("schema.sql").read_text("utf-8")
     conn.executescript(sql)
+    # v1 -> v2: snapshots gained physical_fingerprint (audit-only).
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(snapshot)")}
+    if "physical_fingerprint" not in cols:
+        conn.execute("ALTER TABLE snapshot ADD COLUMN physical_fingerprint TEXT")
     conn.execute(
-        "INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', ?)",
+        "INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?)",
         (SCHEMA_VERSION,),
     )
     conn.commit()

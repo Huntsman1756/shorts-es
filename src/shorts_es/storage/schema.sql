@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS snapshot (
     publication_date  TEXT,                     -- declared by the workbook itself
     parser_version    TEXT NOT NULL,
     schema_fingerprint TEXT NOT NULL,
+    physical_fingerprint TEXT,                    -- audit-only, added in schema v2
     status            TEXT NOT NULL,            -- parsed | schema_drift | parse_error
     raw_path          TEXT NOT NULL
 );

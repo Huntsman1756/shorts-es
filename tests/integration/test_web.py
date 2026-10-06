@@ -20,7 +20,7 @@ def test_health(client):
 def test_dataset(client):
     r = client.get("/api/v1/dataset")
     d = r.json()
-    assert d["parser_version"] == "cnmv-nsp-parser/1"
+    assert d["parser_version"] == "cnmv-nsp-parser/2"
     assert d["stats"]["disclosures"] > 0
     assert d["latest_snapshot"]["snapshot_sha256"]
 
@@ -56,7 +56,7 @@ def test_verify_endpoint(client):
 def test_snapshots_endpoint(client):
     snaps = client.get("/api/v1/snapshots").json()["snapshots"]
     assert len(snaps) == 1
-    assert snaps[0]["parser_version"] == "cnmv-nsp-parser/1"
+    assert snaps[0]["parser_version"] == "cnmv-nsp-parser/2"
 
 
 def test_disclosure_provenance_endpoint(client):
@@ -102,3 +102,27 @@ def test_ambiguous_search_lists_candidates(client):
 def test_no_write_endpoints(client):
     r = client.post("/api/v1/health")
     assert r.status_code == 405
+
+
+def test_issuers_and_holders_pages(client):
+    r = client.get("/issuers")
+    assert r.status_code == 200 and "ACCIONA" in r.text
+    r = client.get("/holders")
+    assert r.status_code == 200 and "BlackRock" in r.text
+    api_i = client.get("/api/v1/issuers").json()
+    acciona = next(i for i in api_i["issuers"] if i["isin"] == "ES0125220311")
+    # Current sheet rows for ACCIONA: 0.62 + 0.49 = 1.11
+    assert acciona["disclosed_total"] == "1.11" and acciona["funds"] == 2
+    api_h = client.get("/api/v1/holders").json()
+    br = next(
+        h
+        for h in api_h["holders"]
+        if h["holder_name"] == "BlackRock Investment Management (UK) Limited"
+    )
+    assert br["positions"] == 2
+
+
+def test_index_shows_rankings(client):
+    r = client.get("/")
+    assert "Most disclosed issuers" in r.text
+    assert "Latest published positions" in r.text
