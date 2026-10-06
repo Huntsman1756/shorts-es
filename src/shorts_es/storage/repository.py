@@ -204,6 +204,15 @@ def latest_snapshot(conn: sqlite3.Connection) -> sqlite3.Row | None:
     ).fetchone()
 
 
+def latest_snapshot_before(conn: sqlite3.Connection, retrieved_at: str) -> sqlite3.Row | None:
+    """Latest parsed snapshot observed at or before a knowledge cutoff."""
+    return conn.execute(
+        "SELECT * FROM snapshot WHERE status = 'parsed' AND retrieved_at <= ? "
+        "ORDER BY retrieved_at DESC LIMIT 1",
+        (retrieved_at,),
+    ).fetchone()
+
+
 def snapshot_sheets(conn: sqlite3.Connection, sha256: str) -> list[sqlite3.Row]:
     return conn.execute(
         "SELECT * FROM snapshot_sheet WHERE snapshot_sha256 = ? ORDER BY sheet_order",

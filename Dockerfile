@@ -7,10 +7,11 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev --no-install-project
 COPY src ./src
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-editable
 
 FROM python:3.12-slim AS runtime
-RUN groupadd -r shorts && useradd -r -g shorts -d /data shorts
+RUN groupadd -r shorts && useradd -r -g shorts -d /data shorts \
+    && mkdir -p /data && chown shorts:shorts /data
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH" \

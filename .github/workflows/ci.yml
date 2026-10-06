@@ -43,7 +43,8 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Build package
         run: uv build
-      - name: Check sdist/wheel contents include web assets
+      - name: Check wheel includes web assets and schema
         run: |
-          uvx --from wheel unpack dist/*.whl -d /tmp/whl 2>/dev/null || python -m zipfile -l dist/*.whl | grep -q "templates/base.html"
-          python -m zipfile -l dist/*.whl | grep -E "templates/base.html|static/style.css|storage/schema.sql"
+          python -m zipfile -l dist/*.whl | grep "templates/base.html"
+          python -m zipfile -l dist/*.whl | grep "static/style.css"
+          python -m zipfile -l dist/*.whl | grep "storage/schema.sql"

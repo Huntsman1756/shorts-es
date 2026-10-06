@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from builder import H_UNICODE, ISIN_A, ISIN_C, LEI_A
+from builder import H_UNICODE, ISIN_A, ISIN_C, LEI_A, build_workbook
 
 from shorts_es import constants
 from shorts_es.exceptions import ParseError, SchemaDriftError, UnsupportedWorkbookError
@@ -219,3 +219,45 @@ def test_pair_key(workbook_bytes):
     parsed = parse_workbook(workbook_bytes)
     d = parsed.rows[0].disclosure
     assert d.pair_key == (d.lei, d.isin, d.holder_name)
+
+
+def test_parse_result_is_order_independent_as_set(workbook_bytes):
+    """Disclosure identity set does not depend on row order."""
+    from builder import CURRENT_A, PREVIOUS_A, SERIES_A
+
+    a = parse_workbook(workbook_bytes)
+    wb_rev = build_workbook(
+        current=list(reversed(CURRENT_A)),
+        series=list(reversed(SERIES_A)),
+        previous=list(reversed(PREVIOUS_A)),
+    )
+    b = parse_workbook(wb_rev)
+    ids_a = {r.disclosure.disclosure_id for r in a.rows}
+    ids_b = {r.disclosure.disclosure_id for r in b.rows}
+    assert ids_a == ids_b
+
+
+def test_blank_rows_are_tolerated():
+    """Fully blank rows inside a data sheet are skipped, not parsed."""
+    from io import BytesIO
+
+    import xlwt
+    from builder import CURRENT_A, PREVIOUS_A, SERIES_A, _write_data_sheet
+
+    wb = xlwt.Workbook()
+    wb.add_sheet(constants.SHEET_METADATA)
+    sh = wb.add_sheet(constants.SHEET_CURRENT)
+    for c, h in enumerate(constants.EXPECTED_HEADERS):
+        sh.write(3, c, h)
+    # data, then a fully blank row, then more data
+    for c, v in enumerate(CURRENT_A[0]):
+        sh.write(4, c, v)
+    for c, v in enumerate(CURRENT_A[1]):
+        sh.write(6, c, v)
+    _write_data_sheet(wb, constants.SHEET_SERIES, SERIES_A)
+    _write_data_sheet(wb, constants.SHEET_PREVIOUS, PREVIOUS_A)
+    buf = BytesIO()
+    wb.save(buf)
+    parsed = parse_workbook(buf.getvalue())
+    cur = [r for r in parsed.rows if r.sheet_name == constants.SHEET_CURRENT]
+    assert len(cur) == 2

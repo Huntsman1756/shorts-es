@@ -66,3 +66,21 @@ def test_sync_preserves_http_metadata(config, workbook_path):
     assert snap["status"] == "parsed"
     assert snap["publication_date"] == "2026-10-06"
     conn.close()
+
+
+def test_first_observed_stable_across_reingest(config, workbook_path):
+    """Re-ingesting the same snapshot must not rewrite knowledge time."""
+    from shorts_es.storage import db
+
+    sync(config, file=str(workbook_path))
+    conn = db.open_db(config.db_path)
+    first = repo_first_observed(conn)
+    conn.close()
+    sync(config, file=str(workbook_path))
+    conn = db.open_db(config.db_path)
+    assert repo_first_observed(conn) == first
+    conn.close()
+
+
+def repo_first_observed(conn):
+    return conn.execute("SELECT first_observed_at FROM disclosure LIMIT 1").fetchone()[0]

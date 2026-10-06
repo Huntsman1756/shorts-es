@@ -177,12 +177,23 @@ def current(
     """Latest published net-short disclosures for an issuer."""
     conn = _conn()
     try:
-        sha = _latest_sha(conn)
+        snap_row = repo.latest_snapshot(conn)
+        if snap_row is None:
+            raise NoDataError("no snapshots yet - run 'shorts-es sync' first")
         refs = identifiers.resolve_issuers(conn, identifier)
         eff = temporal.parse_effective_date(effective_at) if effective_at else None
         kn = temporal.parse_known_at(known_at) if known_at else None
         _knowledge_guard(conn, kn)
-        cur_pairs = reconstruction.current_pair_keys(conn, sha) if kn is None else set()
+        # Current-sheet membership is evaluated on the latest snapshot
+        # observed at/before the knowledge cutoff, not silently dropped.
+        snap_for_current = (
+            repo.latest_snapshot_before(conn, temporal.iso_utc(kn)) if kn else snap_row
+        )
+        if snap_for_current is None:
+            raise InsufficientKnowledgeHistoryError(
+                f"no snapshot observed at/before {temporal.iso_utc(kn)}"
+            )
+        cur_pairs = reconstruction.current_pair_keys(conn, snap_for_current["snapshot_sha256"])
         for ref in refs:
             states = reconstruction.issuer_states(
                 conn, ref.isin, effective_at=eff, known_at=kn, current_pairs=cur_pairs
@@ -195,7 +206,7 @@ def current(
                             "isin": ref.isin,
                             "lei": ref.lei,
                             "issuer_name": ref.issuer_name,
-                            "snapshot_sha256": sha,
+                            "snapshot_sha256": snap_for_current["snapshot_sha256"],
                             "disclosed_total_pct": str(sum(s.position_pct for s in in_current)),
                             "positions": [
                                 {
@@ -545,6 +556,12 @@ def verify(
             raise NotFoundError(f"snapshot not found: {sha}")
         sha = snap["snapshot_sha256"]
         result = verification.verify_snapshot(conn, sha)
+        logging.getLogger("shorts_es").info(
+            "verification_%s snapshot=%s matched=%d",
+            "pass" if result.passed else "fail",
+            sha[:12],
+            result.matched,
+        )
         if record:
             repo.record_verification(
                 conn,

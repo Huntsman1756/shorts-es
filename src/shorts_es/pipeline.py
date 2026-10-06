@@ -105,7 +105,7 @@ def sync(config: Config, file: str | None = None, url: str | None = None) -> Syn
         new_disc = sum(1 for _ in repo.disclosure_ids_since_snapshot(conn, stored.sha256))
         return SyncResult(
             sha256=stored.sha256,
-            status="CREATED" if not stored.already_existed else "NO_CHANGE",
+            status="CREATED" if outcome == "created" else "UPDATED",
             retrieved_at=stored.retrieved_at.isoformat(),
             new_disclosures=new_disc,
             total_rows=len(parsed.rows) if parsed else 0,
