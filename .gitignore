@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+
+# Tooling
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Local data (runtime state lives in the platform data dir by default)
+data/local/
+*.db
+*.db-wal
+*.db-shm
+
+# Probe artifacts (not redistributed)
+_probe/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
