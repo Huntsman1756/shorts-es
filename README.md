@@ -29,7 +29,7 @@ and lets anyone recompute — not just query — every published result.
 Python ≥3.12, managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv tool install shorts-es
+uv tool install git+https://github.com/Huntsman1756/shorts-es.git
 # or from a clone: uv sync && uv run shorts-es --help
 
 shorts-es sync                      # fetch + snapshot + parse + ingest
