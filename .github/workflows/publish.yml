@@ -1,0 +1,43 @@
+name: publish
+
+# Builds the sdist/wheel in CI and publishes to PyPI via trusted publishing
+# (OIDC — no API tokens stored anywhere). Requires a "pending publisher" on
+# PyPI for project `shorts-es` pointing at this repo, workflow `publish.yml`,
+# environment `pypi`. Runs on every published GitHub release, or manually
+# via workflow_dispatch (builds whatever pyproject.toml says on main).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Build package
+        run: uv build
+      - name: Check wheel includes web assets and schema
+        run: |
+          python -m zipfile -l dist/*.whl | grep "templates/base.html"
+          python -m zipfile -l dist/*.whl | grep "static/style.css"
+          python -m zipfile -l dist/*.whl | grep "storage/schema.sql"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

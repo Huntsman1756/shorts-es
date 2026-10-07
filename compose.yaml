@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    image: shorts-es:0.1.0
+    image: shorts-es:0.1.2
     restart: unless-stopped
     volumes:
       - shorts-es-data:/data
@@ -28,7 +28,7 @@ services:
   # Data refresher: re-syncs the source twice a day using the same volume.
   # Keeps SQLite + raw snapshots persistent outside the web container.
   sync:
-    image: shorts-es:0.1.0
+    image: shorts-es:0.1.2
     restart: "no"
     profiles: ["job"]
     volumes:

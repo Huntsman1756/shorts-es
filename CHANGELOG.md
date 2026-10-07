@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.2] — 2026-10-06
+
+### Changed
+
+- Security upgrades: `fastapi>=0.142` (starlette 1.7) and dev `pytest` 9,
+  addressing published advisories. No functional changes.
+
+## [0.1.1] — 2026-10-06
+
+Superseded by 0.1.2 within the same day; no GitHub release was cut for it.
+
+### Fixed
+
+- `sync`: retry transient drops from the CNMV endpoint in `fetch_source`.
+
+### Changed
+
+- Consolidated public documentation: pruned internal process scaffolding
+  (decision records, gates, ROADMAP); operational contracts remain in
+  `docs/source-format.md`, `docs/source-changelog.md` and `DATA-NOTICE.md`.
+- Packaging metadata and project URLs updated for the repository layout.
+
 ## [0.1.0] — 2026-10-06
 
 Initial release.
