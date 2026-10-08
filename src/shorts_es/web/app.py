@@ -63,9 +63,19 @@ def create_app(config: Config) -> FastAPI:
     )
     app.state.templates = Jinja2Templates(directory=_WEB_DIR / "templates")
     def _url_encode(v: str) -> str:
+        """Codificación de cadena de consulta (los espacios van como `+`)."""
         from urllib.parse import quote_plus
         return quote_plus(v, safe="")
+    def _path_quote(v: str) -> str:
+        """Codificación para un segmento de ruta: los espacios van como `%20`.
+
+        Con `+` el nombre no se resuelve (en una ruta, `+` es un carácter literal),
+        así que los enlaces a /holder/<nombre> quedaban en 404.
+        """
+        from urllib.parse import quote
+        return quote(v, safe="")
     app.state.templates.env.filters["urlencode"] = _url_encode
+    app.state.templates.env.filters["pathquote"] = _path_quote
 
     @app.exception_handler(ShortsEsError)
     async def _shorts_error(request: Request, exc: ShortsEsError) -> JSONResponse:

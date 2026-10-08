@@ -99,7 +99,7 @@
         {% for s in in_current %}
         <tr>
           <td class="col-entity">
-            <span class="entity-name"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></span>
+            <span class="entity-name"><a href="/holder/{{ s.holder_name | pathquote }}">{{ s.holder_name }}</a></span>
           </td>
           <td class="num col-num">{{ s.position_pct }}</td>
           <td class="col-date">{{ s.position_date }}</td>
@@ -109,7 +109,7 @@
           <td colspan="4">
             <div class="card-row">
               <div class="card-label">Titular</div>
-              <div class="card-value"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></div>
+              <div class="card-value"><a href="/holder/{{ s.holder_name | pathquote }}">{{ s.holder_name }}</a></div>
               <div class="card-label">Posición corta neta % del capital</div>
               <div class="card-value">{{ s.position_pct }}</div>
               <div class="card-label">Fecha de posición</div>
@@ -156,7 +156,7 @@
         {% for s in not_current %}
         <tr>
           <td class="col-entity">
-            <span class="entity-name"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></span>
+            <span class="entity-name"><a href="/holder/{{ s.holder_name | pathquote }}">{{ s.holder_name }}</a></span>
           </td>
           <td class="num col-num">{{ s.position_pct }}</td>
           <td class="col-date">{{ s.position_date }}</td>
@@ -166,7 +166,7 @@
           <td colspan="4">
             <div class="card-row">
               <div class="card-label">Titular</div>
-              <div class="card-value"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></div>
+              <div class="card-value"><a href="/holder/{{ s.holder_name | pathquote }}">{{ s.holder_name }}</a></div>
               <div class="card-label">Última posición publicada</div>
               <div class="card-value">{{ s.position_pct }}</div>
               <div class="card-label">Fecha de posición</div>
@@ -207,7 +207,7 @@
           <td class="col-date">{{ r.position_date }}</td>
           <td class="num col-num">{{ r.position_pct }}</td>
           <td class="col-entity">
-            <a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a>
+            <a href="/holder/{{ r.holder_name | pathquote }}">{{ r.holder_name }}</a>
           </td>
           <td class="muted small">{{ r.first_observed_at[:10] }}</td>
           <td class="col-prov"><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>

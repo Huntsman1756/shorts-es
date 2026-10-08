@@ -385,13 +385,13 @@ def svg_line_chart(history_rows: list, disclosed_total: str, width: int = 700, h
         date_totals[r["position_date"]] += pct
 
     if not date_totals:
-        return Markup('<text x="10" y="100" font-size="14" fill="#64748b">Sin datos</text>')
+        return Markup('<text x="10" y="100" font-size="14" class="chart-label">Sin datos</text>')
 
     dates = sorted(date_totals.keys())
     values = [date_totals[d] for d in dates]
     n = len(dates)
     if n < 2:
-        return Markup('<text x="10" y="100" font-size="14" fill="#64748b">Necesito al menos 2 fechas</text>')
+        return Markup('<text x="10" y="100" font-size="14" class="chart-label">Necesito al menos 2 fechas</text>')
 
     margin = {"top": 20, "right": 20, "bottom": 40, "left": 50}
     cw = width - margin["left"] - margin["right"]
@@ -411,34 +411,66 @@ def svg_line_chart(history_rows: list, disclosed_total: str, width: int = 700, h
         return margin["top"] + ch - ((val - min_val) / val_range) * ch
 
     parts = []
-    parts.append(f'<line x1="{margin['left']}" y1="{margin['top']}" x2="{margin['left']}" y2="{margin['top']+ch}" stroke="#e2e8f0" stroke-width="1"/>')
-    parts.append(f'<line x1="{margin['left']}" y1="{margin['top']+ch}" x2="{margin['left']+cw}" y2="{margin['top']+ch}" stroke="#e2e8f0" stroke-width="1"/>')
+    parts.append(f'<line x1="{margin['left']}" y1="{margin['top']}" x2="{margin['left']}" y2="{margin['top']+ch}" class="chart-axis"/>')
+    parts.append(f'<line x1="{margin['left']}" y1="{margin['top']+ch}" x2="{margin['left']+cw}" y2="{margin['top']+ch}" class="chart-axis"/>')
 
     for i in range(6):
         val = min_val + (val_range * i / 5)
         y = y_pos(val)
-        parts.append(f'<text x="{margin['left']-5}" y="{y+4}" text-anchor="end" font-size="10" fill="#64748b">{val:.2f}%</text>')
-        parts.append(f'<line x1="{margin['left']}" y1="{y}" x2="{margin['left']+cw}" y2="{y}" stroke="#f1f5f9" stroke-width="1"/>')
+        parts.append(f'<text x="{margin['left']-5}" y="{y+4}" text-anchor="end" font-size="10" class="chart-label">{val:.2f}%</text>')
+        parts.append(f'<line x1="{margin['left']}" y1="{y}" x2="{margin['left']+cw}" y2="{y}" class="chart-grid"/>')
 
     step = max(1, n // 10)
     for i in range(0, n, step):
         x = x_pos(i)
-        parts.append(f'<text x="{x}" y="{margin['top']+ch+20}" text-anchor="middle" font-size="9" fill="#64748b">{dates[i]}</text>')
+        parts.append(f'<text x="{x}" y="{margin['top']+ch+20}" text-anchor="middle" font-size="9" class="chart-label">{dates[i]}</text>')
 
-    line_parts = []
-    for i in range(n):
+    # <polyline> espera pares "x,y" separados por espacios: con prefijos M/L
+    # (sintaxis de <path>) el navegador no dibuja nada.
+    puntos = " ".join(f"{x_pos(i)},{y_pos(values[i])}" for i in range(n))
+    parts.append(f'<polyline points="{puntos}" fill="none" class="chart-line" stroke-width="2" stroke-linejoin="round"/>')
+
+    destacados = _puntos_destacados(values)
+    for i in destacados:
         x = x_pos(i)
         y = y_pos(values[i])
-        line_parts.append(f'M{x},{y}' if i == 0 else f'L{x},{y}')
-    parts.append(f'<polyline points="{" ".join(line_parts)}" fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>')
-
-    for i in range(n):
-        x = x_pos(i)
-        y = y_pos(values[i])
-        parts.append(f'<circle cx="{x}" cy="{y}" r="3.5" fill="#2563eb"/>')
-        parts.append(f'<text x="{x}" y="{y-8}" text-anchor="middle" font-size="9" font-weight="600" fill="#0f172a">{values[i]:.2f}%</text>')
+        es_minimo = i > 0 and i < n - 1 and values[i] < values[i - 1] and values[i] < values[i + 1]
+        dy = 16 if es_minimo else -8
+        parts.append(f'<circle cx="{x}" cy="{y}" r="3.5" class="chart-dot"/>')
+        parts.append(f'<text x="{x}" y="{y+dy}" text-anchor="middle" font-size="9" font-weight="600" class="chart-value">{values[i]:.2f}%</text>')
 
     return Markup("".join(parts))
+
+
+def _puntos_destacados(values: list[float], max_puntos: int = 12) -> list[int]:
+    """Índices que merecen punto y etiqueta: extremos locales + último dato.
+
+    Con cientos de fechas, poner un punto y su etiqueta en cada una hace un
+    amasijo ilegible. Se marcan solo los extremos locales con prominencia
+    apreciable (≥5% del rango: los dientes de sierra mínimos son ruido) y el
+    último valor, que es el vigente. Si hay pocas fechas, se marcan todas.
+    """
+    n = len(values)
+    if n == 0:
+        return []
+    if n <= max_puntos:
+        return list(range(n))
+
+    span = (max(values) - min(values)) or 1.0
+    umbral = span * 0.05
+    candidatos: list[int] = []
+    for i in range(1, n - 1):
+        es_max = values[i] >= values[i - 1] and values[i] > values[i + 1]
+        es_min = values[i] <= values[i - 1] and values[i] < values[i + 1]
+        if not (es_max or es_min):
+            continue
+        prominencia = min(abs(values[i] - values[i - 1]), abs(values[i] - values[i + 1]))
+        if prominencia >= umbral:
+            candidatos.append(i)
+
+    mediana = sorted(values)[n // 2]
+    candidatos.sort(key=lambda i: abs(values[i] - mediana), reverse=True)
+    return sorted(set(candidatos[: max_puntos - 1]) | {n - 1})
 
 
 def _filter_holders(holders: list[dict], q: str) -> list[dict]:

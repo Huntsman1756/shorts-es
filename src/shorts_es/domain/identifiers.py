@@ -77,7 +77,26 @@ def resolve_issuers(conn: sqlite3.Connection, identifier: str) -> list[IssuerRef
 
 
 def resolve_holder(conn: sqlite3.Connection, name: str) -> str:
-    """Resolve a holder name to the exact published form."""
+    """Resolve a holder name to the exact published form.
+
+    Acepta también enlaces antiguos con `+` en vez de `%20` (en una ruta el `+`
+    es un carácter literal, así que esos enlaces no resolvían el nombre).
+    """
+    candidatos = [name.strip()]
+    con_mas = name.replace("+", " ").strip()
+    if con_mas not in candidatos:
+        candidatos.append(con_mas)
+
+    ultimo_error: Exception | None = None
+    for ident in candidatos:
+        try:
+            return _resolve_holder_exacto(conn, ident)
+        except NotFoundError as exc:
+            ultimo_error = exc
+    raise ultimo_error or NotFoundError(f"no holder matching {name!r}")
+
+
+def _resolve_holder_exacto(conn: sqlite3.Connection, name: str) -> str:
     ident = name.strip()
     exact = conn.execute(
         "SELECT DISTINCT holder_name FROM disclosure " "WHERE holder_name = ? COLLATE NOCASE",

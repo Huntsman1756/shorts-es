@@ -46,7 +46,7 @@
           <code>{{ r.isin }}</code></a>
         </td>
         <td>{{ r.issuer_name }}</td>
-        <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
+        <td><a href="/holder/{{ r.holder_name | pathquote }}">{{ r.holder_name }}</a></td>
         <td>{{ r.position_date }}</td>
         <td class="num">{{ r.position_pct }}</td>
         <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>

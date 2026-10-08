@@ -24,6 +24,13 @@
   --amber:     #d97706;
   --amber-bg:  #fffbeb;
 
+  /* charts (el grafico usa estos, no colores incrustados) */
+  --chart-axis:  #e2e8f0;
+  --chart-grid:  #f1f5f9;
+  --chart-label: #64748b;
+  --chart-line:  #2563eb;
+  --chart-value: #0f172a;
+
   /* typography */
   --sans:  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono:  ui-monospace, "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -73,6 +80,11 @@
     --red-bg:   #2a0c0c;
     --amber:    #fbbf24;
     --amber-bg: #2a1e05;
+    --chart-axis:  #334155;
+    --chart-grid:  #1e293b;
+    --chart-label: #94a3b8;
+    --chart-line:  #60a5fa;
+    --chart-value: #e2e8f0;
     --shadow:    0 1px 3px rgba(0,0,0,.2);
     --shadow-md: 0 4px 6px rgba(0,0,0,.18);
     --shadow-lg: 0 10px 15px rgba(0,0,0,.22);
@@ -627,6 +639,16 @@ main {
 }
 .footer-links a { color: var(--muted); }
 .footer-links a:hover { color: var(--fg); text-decoration: underline; }
+
+/* ——— Gráficos SVG ———
+   Los colores se resuelven por CSS (no incrustados en el SVG) para que el
+   gráfico se lea tanto en tema claro como oscuro. */
+.chart-axis  { stroke: var(--chart-axis); }
+.chart-grid  { stroke: var(--chart-grid); }
+.chart-line  { fill: none; stroke: var(--chart-line); }
+.chart-dot   { fill: var(--chart-line); }
+.chart-label { fill: var(--chart-label); }
+.chart-value { fill: var(--chart-value); }
 
 /* ——— Responsive ——— */
 @media (max-width: 720px) {

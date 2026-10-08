@@ -256,7 +256,7 @@
         {% for h in top_holders %}
         <tr>
           <td class="col-entity col-compact">
-            <span class="entity-name"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></span>
+            <span class="entity-name"><a href="/holder/{{ h.holder_name | pathquote }}">{{ h.holder_name }}</a></span>
           </td>
           <td class="num col-num">{{ h.positions }}</td>
           <td class="num col-num">{{ h.issuers }}</td>
@@ -273,7 +273,7 @@
           <td colspan="5">
             <div class="card-row">
               <div class="card-label">Entidad</div>
-              <div class="card-value"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></div>
+              <div class="card-value"><a href="/holder/{{ h.holder_name | pathquote }}">{{ h.holder_name }}</a></div>
               <div class="card-label">Posiciones</div>
               <div class="card-value">{{ h.positions }}</div>
               <div class="card-label">Emisores</div>
@@ -320,7 +320,7 @@
             <span class="entity-name"><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></span>
           </td>
           <td class="col-entity">
-            <a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a>
+            <a href="/holder/{{ r.holder_name | pathquote }}">{{ r.holder_name }}</a>
           </td>
           <td class="num col-num">{{ r.position_pct }}</td>
           <td class="col-prov"><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
@@ -333,7 +333,7 @@
               <div class="card-label">Emisor</div>
               <div class="card-value"><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></div>
               <div class="card-label">Titular</div>
-              <div class="card-value"><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></div>
+              <div class="card-value"><a href="/holder/{{ r.holder_name | pathquote }}">{{ r.holder_name }}</a></div>
               <div class="card-label">%</div>
               <div class="card-value">{{ r.position_pct }}</div>
               <div class="card-label">Procedencia</div>

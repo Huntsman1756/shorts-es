@@ -76,7 +76,7 @@
       {% for h in holders %}
       <tr>
         <td class="col-entity col-compact">
-          <span class="entity-name"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></span>
+          <span class="entity-name"><a href="/holder/{{ h.holder_name | pathquote }}">{{ h.holder_name }}</a></span>
         </td>
         <td class="num col-num">{{ h.positions }}</td>
         <td class="num col-num">{{ h.issuers }}</td>
@@ -95,7 +95,7 @@
         <td colspan="5">
           <div class="card-row">
             <div class="card-label">Entidad</div>
-            <div class="card-value"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></div>
+            <div class="card-value"><a href="/holder/{{ h.holder_name | pathquote }}">{{ h.holder_name }}</a></div>
 
             <div class="card-label">Posiciones</div>
             <div class="card-value">{{ h.positions }}</div>

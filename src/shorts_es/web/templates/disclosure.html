@@ -14,7 +14,7 @@
     <dt>Emisor</dt><dd><a href="/issuer/{{ d.isin }}">{{ d.issuer_name }}</a></dd>
     <dt>ISIN</dt><dd><code>{{ d.isin }}</code></dd>
     <dt>LEI del titular</dt><dd><code>{{ d.lei }}</code></dd>
-    <dt>Titular (gestora/fondo)</dt><dd><a href="/holder/{{ d.holder_name | urlencode }}">{{ d.holder_name }}</a></dd>
+    <dt>Titular (gestora/fondo)</dt><dd><a href="/holder/{{ d.holder_name | pathquote }}">{{ d.holder_name }}</a></dd>
     <dt>Fecha de posición</dt><dd>{{ d.position_date }}</dd>
     <dt>Posición corta neta</dt><dd class="num">{{ d.position_pct }} % del capital</dd>
     <dt>Primera observación</dt><dd>{{ d.first_observed_at }}</dd>
