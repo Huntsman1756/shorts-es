@@ -77,6 +77,22 @@
           <td class="col-date">{{ s.position_date }}</td>
           <td class="col-prov"><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
         </tr>
+        <tr class="table-row-cards">
+          <td colspan="5">
+            <div class="card-row">
+              <div class="card-label">Emisor</div>
+              <div class="card-value"><a href="/issuer/{{ s.isin }}">{{ s.issuer_name }}</a></div>
+              <div class="card-label">ISIN</div>
+              <div class="card-value"><code>{{ s.isin }}</code></div>
+              <div class="card-label">Posición corta neta % del capital</div>
+              <div class="card-value">{{ s.position_pct }}</div>
+              <div class="card-label">Fecha de posición</div>
+              <div class="card-value">{{ s.position_date }}</div>
+              <div class="card-label">Procedencia</div>
+              <div class="card-value"><a href="/disclosure/{{ s.disclosure_id }}">fuente</a></div>
+            </div>
+          </td>
+        </tr>
         {% else %}
         <tr>
           <td colspan="5" class="muted">No se encuentran posiciones publicadas actualmente para este titular.</td>

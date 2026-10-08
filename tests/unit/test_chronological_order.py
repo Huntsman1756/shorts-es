@@ -87,6 +87,6 @@ def test_plantillas_incluyen_variante_tarjeta():
         assert "table-wrap" in html, f"{ruta.name}: tabla sin .table-wrap"
     assert anchas, "no se encontró ninguna tabla ancha"
 
-    for nombre in ("issuers.html", "holders.html"):
+    for nombre in ("issuers.html", "holders.html", "index.html", "issuer.html", "holder.html"):
         html = (TEMPLATES / nombre).read_text(encoding="utf-8")
         assert "table-row-cards" in html, f"{nombre} no tiene filas de tarjeta"
