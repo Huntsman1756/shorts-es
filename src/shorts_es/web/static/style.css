@@ -673,7 +673,9 @@ main {
     box-shadow: var(--shadow-md);
     z-index: 60;
   }
-  .nav[aria-expanded="true"] { display: flex; }
+  /* El estado vive en el botón (.nav-toggle[aria-expanded]); el nav es su
+     hermano siguiente. Antes se miraba .nav[aria-expanded], que nunca existe. */
+  .nav-toggle[aria-expanded="true"] ~ .nav { display: flex; }
   .nav a { width: 100%; padding: var(--space-3); }
 
   .topbar .wrap { position: relative; }
