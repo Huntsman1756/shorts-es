@@ -84,7 +84,7 @@ def test_html_issuer_page(client):
     r = client.get("/issuer/ES0125220311")
     assert r.status_code == 200
     assert "ACCIONA" in r.text
-    assert "not total short interest" in r.text
+    assert "no es el interés corto total del mercado" in r.text
 
 
 def test_search_redirects_to_issuer(client):
@@ -124,5 +124,5 @@ def test_issuers_and_holders_pages(client):
 
 def test_index_shows_rankings(client):
     r = client.get("/")
-    assert "Most disclosed issuers" in r.text
-    assert "Latest published positions" in r.text
+    assert "Emisores más divulgados" in r.text
+    assert "Últimas posiciones publicadas" in r.text

@@ -458,3 +458,8 @@ def changes_page(request: Request, since: date, conn: sqlite3.Connection = Depen
 @pages.get("/methodology")
 def methodology_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
     return _t(request).TemplateResponse(request, "methodology.html", _base_ctx(request, conn))
+
+
+@pages.get("/glossary")
+def glossary_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    return _t(request).TemplateResponse(request, "glossary.html", _base_ctx(request, conn))

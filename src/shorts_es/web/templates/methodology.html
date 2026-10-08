@@ -1,70 +1,148 @@
 {% extends "base.html" %}
-{% block title %}Methodology — shorts-es{% endblock %}
+{% block title %}Metodología — shorts-es{% endblock %}
 {% block content %}
-<h1>Methodology</h1>
+<div class="page-header">
+  <h1>Metodología</h1>
+  <p>
+    Cómo funciona shorts-es: descarga, parses, almacena y verifica las posiciones cortas netas
+    publicadas por la CNMV de forma reproducible e inmutable.
+  </p>
+</div>
 
-<h2>What this dataset is</h2>
-<p>An executable verification layer over the public net-short-position
-disclosures published by the CNMV in
-<code>NetShortPositions.xls</code>. shorts-es downloads the workbook,
-stores it immutably by SHA-256, parses it deterministically and exposes
-the contents — with a complete provenance chain from every number back to
-a snapshot, sheet and row.</p>
+<!-- ——— Qué es ——— -->
+<section class="section">
+  <h2>¿Qué es este dataset?</h2>
+  <div class="card">
+    <p>
+      shorts-es es una capa de verificación ejecutable sobre las divulgaciones de posiciones cortas netas
+      que publica la CNMV en <code>NetShortPositions.xls</code>. El proyecto descarga el documento oficial,
+      lo almacena de forma inmutable identificado por SHA-256, lo analiza de forma determinística
+      y expone los datos a través de una web y una API JSON, con un rastro de procedencia completo
+      desde cada cifra hasta la captura, la hoja y la fila exacta.
+    </p>
+  </div>
+</section>
 
-<h2>What it is not</h2>
-<ul>
-  <li><strong>Not total short interest.</strong> Public disclosures cover
-      only positions notified to CNMV; undisclosed short exposure is
-      invisible to this dataset (and to the source).</li>
-  <li><strong>Not a trading signal.</strong> No inference, scoring or
-      prediction is applied.</li>
-  <li><strong>Not an official CNMV product.</strong> The source always
-      prevails; discrepancies must be resolved against the original
-      publication.</li>
-</ul>
+<!-- ——— Qué no es ——— -->
+<section class="section">
+  <h2>¿Qué NO es?</h2>
+  <div class="card card--red">
+    <h3>No es el interés corto total del mercado</h3>
+    <p>
+      Las divulgaciones públicas cubren solo las posiciones notificadas a la CNMV.
+      La exposición corta no declarada es invisible a este dataset (y a la fuente original).
+    </p>
+  </div>
+  <div class="card card--red">
+    <h3>No es una señal de trading</h3>
+    <p>
+      No se aplica inferencia, puntuación ni predicción alguna. Los datos se presentan tal cual.
+    </p>
+  </div>
+  <div class="card card--red">
+    <h3>No es un producto oficial de la CNMV</h3>
+    <p>
+      La fuente siempre prevalece; las discrepancias deben resolverse contra la publicación original.
+    </p>
+  </div>
+</section>
 
-<h2>Threshold semantics</h2>
-<p>Under Regulation (EU) 236/2012, net short positions of 0.5 % or more in
-listed shares must be publicly disclosed. CNMV, however, publishes
-<em>all</em> notified values — including positions below 0.5 % and explicit
-0.00 % closing notifications. shorts-es preserves the published figure
-verbatim (arbitrary decimal precision, no rounding) and never treats a
-sub-0.5 % publication as absent.</p>
+<!-- ——— Umbral ——— -->
+<section class="section">
+  <h2>Semántica del umbral</h2>
+  <div class="card">
+    <p>
+      Bajo el Reglamento (UE) 236/2012, las posiciones cortas netas del 0,5 % o más en acciones cotizadas
+      deben divulgarse públicamente. La CNMV, sin embargo, publica <em>todos</em> los valores notificados —
+      incluidas posiciones por debajo del 0,5 % y notificaciones explícitas de cierre a 0,00 %.
+      shorts-es conserva la cifra publicada tal cual (precisión decimal arbitraria, sin redondeo)
+      y nunca interpreta una publicación sub-0,5 % como inexistente.
+    </p>
+  </div>
+</section>
 
-<h2>Temporal semantics</h2>
-<p>Two clocks are kept separate:</p>
-<ul>
-  <li><strong>Position date</strong> (effective/regulatory time): the date
-      the source attributes to the position.</li>
-  <li><strong>Observed at</strong> (knowledge time): when shorts-es first
-      downloaded a snapshot containing the disclosure.</li>
-</ul>
-<p>Historical rows present in our first snapshot are marked
-<code>RECONSTRUCTED_HISTORICAL</code>: we know they existed in that
-publication, but we cannot claim when they were first published or that
-they were publicly visible on their position date.</p>
+<!-- ——— Temporal ——— -->
+<section class="section">
+  <h2>Semántica temporal</h2>
+  <div class="card">
+    <p>Se mantienen separados dos relojes:</p>
+    <ul>
+      <li>
+        <strong>Fecha de posición</strong> (tiempo regulatorio): la fecha que la fuente atribuye a la posición.
+        Es la fecha efectiva a la que se refiere la posición corta neta.
+      </li>
+      <li>
+        <strong>Fecha de observación</strong> (tiempo de conocimiento): cuando shorts-es descargó
+        por primera vez una captura que contenía la divulgación.
+      </li>
+    </ul>
+    <p>
+      Las filas históricas presentes en nuestra primera captura se marcan como
+      <code>RECONSTRUCTED_HISTORICAL</code>: sabemos que existían en esa publicación,
+      pero no podemos afirmar cuándo se publicaron por primera vez ni si fueron visibles
+      públicamente en su fecha de posición.
+    </p>
+  </div>
+</section>
 
-<h2>Reconstruction and verification</h2>
-<p>For each (LEI, ISIN, holder) pair, the latest publication by position
-date defines its published state. The Series sheet is used to reconstruct
-that state independently and compare it with the Current sheet published
-by CNMV — <code>shorts-es verify</code> reports matches, missing,
-unexpected and conflicting pairs. A pair absent from the Current sheet is
-<em>not currently published</em>; it is never reported as zero.</p>
+<!-- ——— Reconstrucción ——— -->
+<section class="section">
+  <h2>Reconstrucción y verificación</h2>
+  <div class="card">
+    <p>
+      Para cada par (LEI, ISIN, titular), la publicación más reciente por fecha de posición define su
+      estado publicado. La hoja <strong>Series</strong> se usa para reconstruir ese estado de forma
+      independiente y compararlo con la hoja <strong>Current</strong> publicada por la CNMV —
+      <code>shorts-es verify</code> informa de coincidencias, ausentes, unexpectedos y conflictos.
+      Un par ausente de la hoja Current es <em>actualmente no publicado</em>; nunca se informa como cero.
+    </p>
+  </div>
+</section>
 
-<h2>Coverage</h2>
-<p>Whatever CNMV publishes in the workbook — Spanish and non-Spanish ISINs
-under CNMV competence. Absence of an issuer from the file does not imply
-CNMV is (or is not) its relevant competent authority.</p>
+<!-- ——— Cobertura ——— -->
+<section class="section">
+  <h2>Cobertura</h2>
+  <div class="card">
+    <p>
+      Todo lo que la CNMV publica en el libro de cálculos — ISINs españoles y no españoles
+      bajo competencia de la CNMV. La ausencia de un emisor del archivo no implica que la CNMV sea
+      (o no sea) su autoridad competente relevante.
+    </p>
+  </div>
+</section>
 
-<h2>Known limitations</h2>
-<ul>
-  <li>The workbook carries no per-row publication timestamp; knowledge
-      before our first snapshot is unknowable to us.</li>
-  <li>The Previous sheet contains duplicated physical rows; they collapse
-      into one canonical disclosure and retain multiple provenance rows.</li>
-  <li>The source contains ISIN case-typo variants (<code>eS…</code>);
-      they are normalized to upper case for identity.</li>
-  <li>Pairs can leave the published list without a closing notification.</li>
-</ul>
+<!-- ——— Limitaciones ——— -->
+<section class="section">
+  <h2>Limitaciones conocidas</h2>
+  <ul>
+    <li>
+      El libro de cálculos no contiene marca de tiempo por fila; el conocimiento antes de nuestra
+      primera captura es desconocible para nosotros.
+    </li>
+    <li>
+      La hoja <strong>Previous</strong> contiene filas físicas duplicadas; colapsan en una
+      divulgación canónica que retiene múltiples filas de procedencia.
+    </li>
+    <li>
+      La fuente contiene variantes con errata de ISIN (<code>eS…</code>); se normalizan a mayúsculas
+      para la identidad.
+    </li>
+    <li>
+      Los pares pueden salir de la lista publicada sin una notificación de cierre.
+    </li>
+  </ul>
+</section>
+
+<!-- ——— Código abierto ——— -->
+<section class="section">
+  <h2>Código abierto</h2>
+  <div class="card card--green">
+    <p>
+      Este proyecto es de código abierto. Puedes verificar la metodología, el parser y la lógica de
+      almacenamiento examinando el código en el repositorio:
+      <a href="{{ constants.SOURCE_URL }}">{{ constants.SOURCE_URL }}</a>.
+    </p>
+  </div>
+</section>
+
 {% endblock %}

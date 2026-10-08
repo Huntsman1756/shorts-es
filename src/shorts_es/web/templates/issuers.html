@@ -1,26 +1,58 @@
 {% extends "base.html" %}
-{% block title %}Issuers — shorts-es{% endblock %}
+{% block title %}Emisores — shorts-es{% endblock %}
 {% block content %}
-<h1>Issuers</h1>
-<p class="muted">{{ issuers | length }} issuers with currently published
-positions · snapshot
-<a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a></p>
-<table>
-  <thead><tr><th>Issuer</th><th>ISIN</th><th>LEI</th><th class="num">Disclosed %</th><th class="num">Holders</th><th>Last position</th></tr></thead>
-  <tbody>
-    {% for i in issuers %}
-    <tr>
-      <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
-      <td><code>{{ i.isin }}</code></td>
-      <td><code>{{ i.lei }}</code></td>
-      <td class="num">{{ i.disclosed_total }}</td>
-      <td class="num">{{ i.funds }}</td>
-      <td>{{ i.last_position_date }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<p class="muted small">Disclosed % = sum of publicly disclosed individual
-positions on the source Current sheet.
-<strong>Not total short interest.</strong></p>
+<div class="page-header">
+  <h1>Emisores</h1>
+  <p>
+    Empresas y entidades cotizadas cuyo capital tiene posiciones cortas netas publicadas.
+    Cada empresa se identifica por su <strong>ISIN</strong> (International Securities Identification Number),
+    un código alfanumérico único de 12 caracteres.
+  </p>
+  <p class="muted">
+    {{ issuers | length }} emisores con posiciones publicadas en la captura actual ·
+    Captura <a href="/snapshots/{{ snapshot.snapshot_sha256 }}">
+    <code>{{ snapshot.snapshot_sha256[:16] }}…</code></a>
+  </p>
+</div>
+
+<div class="info">
+  <p>
+    <strong>Divulgado % del capital</strong> = suma de todos los porcentajes de posición corta neta notificados
+    para este emisor por todos los titulares. Si un emisor tiene un "Divulgado %" del 5 %, significa que la suma
+    de las posiciones cortas declaradas de todas las gestoras es del 5 % del capital social de esa empresa.
+    <strong>Esto no es el interés corto total del mercado</strong>.
+  </p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Empresa</th>
+        <th>ISIN</th>
+        <th>LEI</th>
+        <th class="num">Divulgado % del capital</th>
+        <th class="num">Titulares</th>
+        <th>Última posición</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in issuers %}
+      <tr>
+        <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
+        <td><code>{{ i.isin }}</code></td>
+        <td><code>{{ i.lei }}</code></td>
+        <td class="num">{{ i.disclosed_total }}</td>
+        <td class="num">{{ i.funds }}</td>
+        <td>{{ i.last_position_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="muted small">
+  Los datos corresponden a las posiciones publicadas en la captura actual.
+  <a href="/issuers">Método de clasificación: por porcentaje de capital divulgado</a>.
+</p>
 {% endblock %}

@@ -1,22 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Holders — shorts-es{% endblock %}
+{% block title %}Titulares — shorts-es{% endblock %}
 {% block content %}
-<h1>Holders</h1>
-<p class="muted">{{ holders | length }} holders with currently published
-positions · snapshot
-<a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a></p>
-<table>
-  <thead><tr><th>Holder</th><th class="num">Positions</th><th class="num">Issuers</th><th class="num">Disclosed %</th><th>Last position</th></tr></thead>
-  <tbody>
-    {% for h in holders %}
-    <tr>
-      <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
-      <td class="num">{{ h.positions }}</td>
-      <td class="num">{{ h.issuers }}</td>
-      <td class="num">{{ h.disclosed_total }}</td>
-      <td>{{ h.last_position_date }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="page-header">
+  <h1>Titulares</h1>
+  <p>
+    Fondos de inversión, gestoras y demás entidades que han comunicado posiciones cortas netas a la CNMV.
+    Cada entidad se identifica por su nombre y por su <strong>LEI</strong> (Legal Entity Identifier),
+    un código de 20 caracteres.
+  </p>
+  <p class="muted">
+    {{ holders | length }} titulares con posiciones publicadas en la captura actual ·
+    Captura <a href="/snapshots/{{ snapshot.snapshot_sha256 }}">
+    <code>{{ snapshot.snapshot_sha256[:16] }}…</code></a>
+  </p>
+</div>
+
+<div class="info">
+  <p>
+    <strong>Posiciones</strong> = número de emisores diferentes en los que la entidad tiene una posición corta publicada.
+    <strong>Divulgado % del capital</strong> = suma de los porcentajes de posición corta neta notificados
+    por esta entidad para todos sus emisores.
+  </p>
+  <p>
+    Una misma gestora puede aparecer varias veces si la CNMV registró las notificaciones
+    por fondo individual en lugar de de forma agregada.
+  </p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Entidad</th>
+        <th class="num">Posiciones</th>
+        <th class="num">Emisores</th>
+        <th class="num">Divulgado % del capital</th>
+        <th>Última posición</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in holders %}
+      <tr>
+        <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
+        <td class="num">{{ h.positions }}</td>
+        <td class="num">{{ h.issuers }}</td>
+        <td class="num">{{ h.disclosed_total }}</td>
+        <td>{{ h.last_position_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

@@ -1,22 +1,58 @@
 {% extends "base.html" %}
-{% block title %}Changes since {{ since }} — shorts-es{% endblock %}
+{% block title %}Novedades desde {{ since }} — shorts-es{% endblock %}
 {% block content %}
-<h1>Disclosures first observed since {{ since }}</h1>
-<p class="muted">{{ rows | length }} new disclosures (observation time, not position date).</p>
-<table>
-  <thead><tr><th>First seen</th><th>ISIN</th><th>Issuer</th><th>Holder</th><th>Date</th><th class="num">%</th><th></th></tr></thead>
-  <tbody>
-    {% for r in rows %}
-    <tr>
-      <td>{{ r.first_observed_at[:19] }}</td>
-      <td><a href="/issuer/{{ r.isin }}"><code>{{ r.isin }}</code></a></td>
-      <td>{{ r.issuer_name }}</td>
-      <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
-      <td>{{ r.position_date }}</td>
-      <td class="num">{{ r.position_pct }}</td>
-      <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">source</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="page-header">
+  <h1>Novedades desde {{ since }}</h1>
+  <p>
+    Divulgaciones que aparecen por primera vez en la base de datos a partir de la fecha indicada.
+    Esto se refiere a la <strong>fecha de observación</strong> (cuando shorts-es las detectó por primera vez),
+    no a la fecha de posición de la CNMV.
+  </p>
+  <p class="muted">
+    {{ rows | length }} nuevas divulgaciones observadas desde {{ since }}.
+  </p>
+</div>
+
+<div class="info">
+  <p>
+    <strong>Primera observación</strong>: es la fecha en que shorts-es detectó esta divulgación por primera vez,
+    es decir, la fecha de descarga de la captura más antigua donde aparece.
+    No es la fecha de posición (que es la regulatoria) ni la fecha de publicación de la CNMV.
+  </p>
+  <p>
+    Las "novedades" pueden incluir: nuevas posiciones cortas, nuevas gestoras o emisores,
+    o posiciones que reaparecen tras haber estado ausentes.
+  </p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Primera observación</th>
+        <th>ISIN</th>
+        <th>Emisor</th>
+        <th>Titular</th>
+        <th>Fecha de posición</th>
+        <th class="num">%</th>
+        <th>Procedencia</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.first_observed_at[:19] }}</td>
+        <td><a href="/issuer/{{ r.isin }}">
+          <code>{{ r.isin }}</code></a>
+        </td>
+        <td>{{ r.issuer_name }}</td>
+        <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
+        <td>{{ r.position_date }}</td>
+        <td class="num">{{ r.position_pct }}</td>
+        <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

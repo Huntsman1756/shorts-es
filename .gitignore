@@ -29,3 +29,12 @@ Thumbs.db
 .vscode/
 _data/
 _data_live/
+# Pi local runtime state
+.pi/npm/*
+!.pi/npm/.gitignore
+.pi/gentle-agent-home/
+.pi/template-backups/
+.pi/stack-runtime/
+.pi/stack-launcher/
+.pi/bin/
+.atl/

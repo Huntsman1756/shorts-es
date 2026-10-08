@@ -1,123 +1,278 @@
 {% extends "base.html" %}
+{% block title %}Inicio — shorts-es{% endblock %}
 {% block content %}
-<section class="panel">
-  <form action="/search" method="get" class="search">
-    <input type="search" name="q" value="{{ q or '' }}" autofocus
-           placeholder="ISIN, LEI, issuer or holder" size="40">
-    <button type="submit">Search</button>
-  </form>
-  {% if error %}<p class="error">{{ error }}</p>{% endif %}
-  {% if candidates %}
-    <p>Ambiguous identifier — did you mean:</p>
-    <ul>{% for c in candidates %}<li>{{ c }}</li>{% endfor %}</ul>
-  {% endif %}
-  {% if issuer_refs %}
-    <p>Several securities match — pick one:</p>
-    <ul>{% for r in issuer_refs %}
-      <li><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }} ({{ r.isin }})</a></li>
-    {% endfor %}</ul>
-  {% endif %}
+
+<!-- ——— Hero / portada ——— -->
+<div class="page-header">
+  <h1>Posiciones cortas netas públicas de la CNMV</h1>
+  <p>
+    shorts-es descarga, analiza y presenta las posiciones cortas netas que los fondos y gestoras
+    están obligados a comunicar a la Comisión Nacional del Mercado de Valores (CNMV) cuando superan
+    el <strong>0,5 % del capital</strong> de una empresa cotizada. Cada documento oficial se guarda
+    de forma inmutable y se puede verificar en cualquier momento.
+  </p>
+</div>
+
+<!-- ——— Búsqueda ——— -->
+<form class="search" action="/search" method="get" role="search">
+  <input type="search" name="q" value="{{ q or '' }}" autofocus
+         placeholder="ISIN, LEI, emisor o titular" aria-label="Buscar por ISIN, LEI, emisor o titular">
+  <button type="submit">Buscar</button>
+</form>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+{% if candidates %}
+  <p class="muted">Identificador ambiguo — ¿querías decir?</p>
+  <ul style="list-style:none;padding:0;margin:0 0 var(--space-4);display:grid;gap:var(--space-1);">
+    {% for c in candidates %}<li>→ <a href="/issuer/{{ c }}"><code>{{ c }}</code></a></li>{% endfor %}
+  </ul>
+{% endif %}
+{% if issuer_refs %}
+  <p class="muted">Varios emisores coinciden — elige uno:</p>
+  <ul style="list-style:none;padding:0;margin:0 0 var(--space-4);display:grid;gap:var(--space-2);">
+    {% for r in issuer_refs %}
+    <li><a href="/issuer/{{ r.isin }}"><code>{{ r.isin }}</code> — {{ r.issuer_name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- ——— ¿Qué es esto? ——— -->
+<section class="section">
+  <h2>¿Qué es esto?</h2>
+  <div class="info">
+    <p>
+      Una <strong>posición corta neta</strong> se produce cuando un fondo o gestora vende más
+      títulos de los que posee (o vende sin tenerlos) de una empresa cotizada. Cuando esa posición
+      supera el 0,5 % del capital social, la normativa europea obliga a notificarlo a la CNMV,
+      que luego publica las posiciones en un documento Excel.
+    </p>
+    <p>
+      shorts-es descarga ese documento oficial cada vez que se actualiza, lo guarda con su hash
+      SHA-256 para garantizar que no se ha modificado, lo analiza y expone los datos a través
+      de una web y una API JSON. Cada cifra tiene un <strong>rastro de procedencia</strong>
+      (provenance): puedes ver exactamente de qué captura, hoja y fila proviene cada número.
+    </p>
+    <p>
+      <strong>Esto no es el interés corto total del mercado</strong>. Solo se muestran las
+      posiciones que los fondos han notificado a la CNMV. Las posiciones no notificadas (por
+      estar por debajo del umbral o por no ser obligatorias) no aparecen aquí.
+    </p>
+  </div>
 </section>
 
-<section class="grid">
-  <div class="panel">
-    <h2>Dataset</h2>
-    <dl class="kv">
-      <dt>Latest snapshot</dt>
-      <dd>{% if data.latest_snapshot %}<a href="/snapshots/{{ data.latest_snapshot.snapshot_sha256 }}"><code>{{ data.latest_snapshot.snapshot_sha256[:16] }}…</code></a>{% else %}—{% endif %}</dd>
-      <dt>Retrieved</dt>
-      <dd>{{ data.latest_snapshot.retrieved_at if data.latest_snapshot else "—" }}</dd>
-      <dt>Publication date (source)</dt>
-      <dd>{{ data.latest_snapshot.publication_date if data.latest_snapshot else "—" }}</dd>
-      <dt>Disclosures</dt><dd>{{ data.stats.disclosures or 0 }}</dd>
-      <dt>Issuers (ISIN)</dt><dd>{{ data.stats.issuers or 0 }}</dd>
-      <dt>Holders</dt><dd>{{ data.stats.holders or 0 }}</dd>
-      <dt>Pairs</dt><dd>{{ data.stats.pairs or 0 }}</dd>
-      <dt>Position dates</dt><dd>{{ data.stats.earliest or "—" }} → {{ data.stats.latest or "—" }}</dd>
-    </dl>
+<!-- ——— ¿Cómo leer las cifras? ——— -->
+<section class="section">
+  <h2>¿Cómo leer las cifras?</h2>
+  <p class="muted">Cada dato de esta web tiene un significado concreto. Aquí te explicamos los términos más importantes:</p>
+
+  <div class="card-grid">
+    <div class="card card--accent">
+      <div class="card-label">Captura (snapshot)</div>
+      <div class="card-value">
+        {% if data.latest_snapshot %}
+          <a href="/snapshots/{{ data.latest_snapshot.snapshot_sha256 }}">
+            {{ data.latest_snapshot.publication_date or "—" }}
+          </a>
+        {% else %}—{% endif %}
+      </div>
+      <div class="card-hint">
+        Cada documento oficial descargado de la CNMV se guarda como una "captura" identificada por su hash SHA-256.
+        La captura más reciente tiene la fecha de publicación que indica la CNMV.
+      </div>
+    </div>
+
+    <div class="card card--accent">
+      <div class="card-label">Fecha de posición</div>
+      <div class="card-value">
+        {% if data.stats.earliest and data.stats.latest %}
+          {{ data.stats.earliest }} → {{ data.stats.latest }}
+        {% else %}—{% endif %}
+      </div>
+      <div class="card-hint">
+        La fecha regulatoria efectiva a la que se refiere la posición. Puede ser distinta de la fecha de publicación del documento.
+      </div>
+    </div>
+
+    <div class="card card--accent">
+      <div class="card-label">Divulgaciones</div>
+      <div class="card-value">{{ data.stats.disclosures or 0 }}</div>
+      <div class="card-hint">
+        Número total de notificaciones individualizadas (una por cada emisor y titular en una fecha concreta).
+        Cada una tiene un identificador único y un rastro de procedencia completo.
+      </div>
+    </div>
+
+    <div class="card card--accent">
+      <div class="card-label">Emisores (ISIN)</div>
+      <div class="card-value">{{ data.stats.issuers or 0 }}</div>
+      <div class="card-hint">
+        Empresas o entidades distintas cuyo capital aparece con posiciones cortas divulgadas.
+        Cada una se identifica por un ISIN (código de 12 caracteres).
+      </div>
+    </div>
+
+    <div class="card card--accent">
+      <div class="card-label">Titulares (LEI)</div>
+      <div class="card-value">{{ data.stats.holders or 0 }}</div>
+      <div class="card-hint">
+        Fondos, gestoras u otras entidades distintas que tienen posiciones cortas notificadas.
+        Cada una se identifica por un LEI (código de 20 caracteres).
+      </div>
+    </div>
+
+    <div class="card card--accent">
+      <div class="card-label">Pares (titular–emisor)</div>
+      <div class="card-value">{{ data.stats.pairs or 0 }}</div>
+      <div class="card-hint">
+        Combinaciones únicas de (titular, emisor) con posiciones cortas publicadas.
+        Un mismo titular puede tener posiciones en varios emisores.
+      </div>
+    </div>
   </div>
+</section>
+
+<!-- ——— Verificación ——— -->
+<section class="section">
+  <h2>Verificación interna</h2>
   <div class="panel">
-    <h2>Verification</h2>
     {% if data.verification %}
-    <p class="verify {{ 'pass' if data.verification.result == 'PASS' else 'fail' }}">
-      {{ data.verification.result }}</p>
+    <div class="verify {{ 'pass' if data.verification.result == 'PASS' else 'fail' }}">
+      {{ data.verification.result }}
+    </div>
     <dl class="kv">
-      <dt>Pairs checked</dt><dd>{{ data.verification.pairs_checked }}</dd>
-      <dt>Exact matches</dt><dd>{{ data.verification.matched }}</dd>
-      <dt>Verified at</dt><dd>{{ data.verification.verified_at }}</dd>
+      <dt>Pares verificados</dt><dd>{{ data.verification.pairs_checked }}</dd>
+      <dt>Coincidencias exactas</dt><dd>{{ data.verification.matched }}</dd>
+      <dt>Última verificación</dt><dd>{{ data.verification.verified_at }}</dd>
     </dl>
+    <p class="muted small">
+      <strong>Verificación independiente contra CNMV:</strong> la captura actual se reconstruye a partir del
+      historial completo y se compara con la hoja "Current" del documento oficial.
+      {{ data.verification.matched }} de {{ data.verification.pairs_checked }} posiciones coinciden exactamente.
+    </p>
     {% else %}
-    <p class="muted">Not run yet. Run <code>shorts-es verify</code>.</p>
-    {% endif %}
-    {% if data.verification and data.verification.result == 'PASS' %}
-    <p class="muted small"><strong>Independently verified against CNMV:</strong>
-    the current snapshot is reconstructed from the published series with
-    {{ data.verification.matched }}/{{ data.verification.pairs_checked }} exact
-    position matches. <a href="/methodology">Methodology →</a></p>
-    {% else %}
-    <p class="muted small">Verification independently reconstructs every
-    position in the source Current sheet from the disclosure series.
-    <a href="/methodology">Methodology →</a></p>
+    <p class="muted">Verificación pendiente. Ejecuta <code>shorts-es verify</code>.</p>
+    <p class="muted small">
+      La verificación reconstruye cada posición de la hoja "Current" a partir de la hoja "Series" del documento.
+      <a href="/methodology">Más sobre la metodología →</a>
+    </p>
     {% endif %}
   </div>
 </section>
 
+<!-- ——— Emisores más divulgados ——— -->
 {% if top_issuers %}
-<h2>Most disclosed issuers</h2>
-<p class="muted small">By sum of currently published positions.
-<a href="/issuers">All issuers →</a></p>
-<table>
-  <thead><tr><th>Issuer</th><th>ISIN</th><th class="num">Disclosed %</th><th class="num">Holders</th><th>Last position</th></tr></thead>
-  <tbody>
-    {% for i in top_issuers %}
-    <tr>
-      <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
-      <td><code>{{ i.isin }}</code></td>
-      <td class="num">{{ i.disclosed_total }}</td>
-      <td class="num">{{ i.funds }}</td>
-      <td>{{ i.last_position_date }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="section">
+  <h2>Emisores más divulgados</h2>
+  <p class="muted">
+    Las empresas con mayor porcentaje de capital objeto de posiciones cortas divulgadas en la captura actual.
+    La columna "Divulgado %" es la suma de las posiciones de todos los titulares para ese emisor.
+  </p>
+  <div class="info">
+    <p>
+      <strong>¿Qué significa "Divulgado % del capital"?</strong> Es la suma de los porcentajes de posición corta
+      neta que cada titular notifica para ese emisor. Si aparece 3,2 %, significa que la suma de todas las
+      posiciones cortas notificadas de ese emisor es del 3,2 % del capital social.
+      <strong>No es el interés corto total del mercado</strong>, solo lo que los fondos han notificado a la CNMV.
+    </p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>ISIN</th>
+          <th class="num">Divulgado % del capital</th>
+          <th class="num">Titulares</th>
+          <th>Última posición</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in top_issuers %}
+        <tr>
+          <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
+          <td><code>{{ i.isin }}</code></td>
+          <td class="num">{{ i.disclosed_total }}</td>
+          <td class="num">{{ i.funds }}</td>
+          <td>{{ i.last_position_date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small"><a href="/issuers">Ver todos los emisores →</a></p>
+</section>
 {% endif %}
 
+<!-- ——— Titulares más activos ——— -->
 {% if top_holders %}
-<h2>Most active holders</h2>
-<p class="muted small">By number of currently published positions.
-<a href="/holders">All holders →</a></p>
-<table>
-  <thead><tr><th>Holder</th><th class="num">Positions</th><th class="num">Issuers</th><th class="num">Disclosed %</th><th>Last position</th></tr></thead>
-  <tbody>
-    {% for h in top_holders %}
-    <tr>
-      <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
-      <td class="num">{{ h.positions }}</td>
-      <td class="num">{{ h.issuers }}</td>
-      <td class="num">{{ h.disclosed_total }}</td>
-      <td>{{ h.last_position_date }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="section">
+  <h2>Titulares más activos</h2>
+  <p class="muted">
+    Los fondos y gestoras con más posiciones cortas publicadas actualmente.
+    "Posiciones" es el número de emisores diferentes en los que tiene posición corta;
+    "Divulgado %" es la suma de sus porcentajes.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Entidad</th>
+          <th class="num">Posiciones</th>
+          <th class="num">Emisores</th>
+          <th class="num">Divulgado % del capital</th>
+          <th>Última posición</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in top_holders %}
+        <tr>
+          <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
+          <td class="num">{{ h.positions }}</td>
+          <td class="num">{{ h.issuers }}</td>
+          <td class="num">{{ h.disclosed_total }}</td>
+          <td>{{ h.last_position_date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small"><a href="/holders">Ver todos los titulares →</a></p>
+</section>
 {% endif %}
 
+<!-- ——— Últimas posiciones publicadas ——— -->
 {% if latest_rows %}
-<h2>Latest published positions</h2>
-<p class="muted small">Most recent position dates on the Current sheet.</p>
-<table>
-  <thead><tr><th>Position date</th><th>Issuer</th><th>Holder</th><th class="num">%</th><th></th></tr></thead>
-  <tbody>
-    {% for r in latest_rows %}
-    <tr>
-      <td>{{ r.position_date }}</td>
-      <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
-      <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
-      <td class="num">{{ r.position_pct }}</td>
-      <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">source</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="section">
+  <h2>Últimas posiciones publicadas</h2>
+  <p class="muted">
+    Las posiciones con fecha de posición más reciente en la hoja "Current" del documento oficial.
+    Cada fila representa un titular que tiene posición corta en un emisor concreto en una fecha concreta.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha de posición</th>
+          <th>Emisor</th>
+          <th>Titular</th>
+          <th class="num">% del capital</th>
+          <th>Procedencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in latest_rows %}
+        <tr>
+          <td>{{ r.position_date }}</td>
+          <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
+          <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
+          <td class="num">{{ r.position_pct }}</td>
+          <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">"Procedencia" enlaza a la ficha de divulgación con el rastro completo de origen.</p>
+</section>
 {% endif %}
+
 {% endblock %}

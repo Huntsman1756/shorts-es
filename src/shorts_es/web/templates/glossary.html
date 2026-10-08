@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Glosario — shorts-es{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Glosario</h1>
+  <p>Glosario de términos para entender las posiciones cortas netas públicas de la CNMV.
+     Si no estás familiarizado con los mercados financieros, esta página te explica cada concepto en lenguaje claro.</p>
+</div>
+
+<section class="section">
+  <h2>Sobre los datos</h2>
+  <div class="glossary-grid">
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Posición corta neta
+        </dt>
+        <dd>Es la diferencia entre las ventas a découvert (ventas sin tener el título) y los títulos prestados o disponibles de un fondo o gestora. Si el resultado es negativo, la posición es <strong>corta</strong>. La CNMV obliga a divulgar estas posiciones cuando superan el 0,5 % del capital de una empresa cotizada.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Divulgación (disclosure)
+        </dt>
+        <dd>Es la notificación oficial que un fondo o gestora envía a la CNMV informando de su posición corta neta por encima del umbral del 0,5 %. Cada divulgación queda registrada con un identificador único y se almacena de forma inmutable en este proyecto.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Emisor (ISIN)
+        </dt>
+        <dd>La empresa o entidad cuyo capital está siendo objeto de posiciones cortas. Cada emisor se identifica con un <strong>ISIN</strong> (International Securities Identification Number), un código alfanumérico de 12 caracteres que lo identifica de forma única a nivel internacional (p. ej., <code>ES0113211835</code> para Banco Santander).</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Titular (holder / LEI)
+        </dt>
+        <dd>El fondo de inversión, gestora u otro sujeto que tiene la posición corta neta. Se identifica con un <strong>LEI</strong> (Legal Entity Identifier), un código de 20 caracteres que identifica de forma única a entidades legales en todo el mundo. Los LEIs pueden compartir nombre si múltiples fondos pertenecen a la misma gestora.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Cifras y porcentajes</h2>
+  <div class="glossary-grid">
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          % del capital
+        </dt>
+        <dd>La posición corta neta expresada como porcentaje del capital social total de la empresa. Si un fondo tiene una posición corta del 1,2 %, significa que sus ventas a descobierto superan a sus títulos prestados en un 1,2 % del capital de esa empresa cotizada.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Umbral de 0,5 %
+        </dt>
+        <dd>Bajo el Reglamento (UE) 236/2012, las posiciones cortas netas iguales o superiores al 0,5 % del capital de un emisor cotizado deben divulgarse públicamente. La CNMV, sin embargo, publica <strong>todos</strong> los valores notificados, incluidos los inferiores al 0,5 %.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Gestora / Fondo
+        </dt>
+        <dd>La <strong>gestora</strong> es la empresa de servicios de inversión autorizada a gestionar fondos de inversión. Un <strong>fondo</strong> es el vehículo de inversión concreto. En las publicaciones de la CNMV, la "gestora" (holder) puede referirse tanto a la propia gestora como a los fondos que gestiona, dependiendo de cómo la CNMV haya registrado la notificación.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Posición agregada
+        </dt>
+        <dd>Cuando un mismo fondo tiene posiciones cortas en varios emisores, la "posición agregada" es la suma de todos sus % del capital. En las tablas de emisores, <strong>Divulgado %</strong> es la suma de las posiciones de todos los titulares para ese emisor concreto.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Metadatos y estructura</h2>
+  <div class="glossary-grid">
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          ISIN (International Securities Identification Number)
+        </dt>
+        <dd>Código alfanumérico de 12 caracteres que identifica un valor financiero de forma única a nivel internacional. Los primeros dos caracteres son el código del país (p. ej., <code>ES</code> para España), seguido de un código nacional y un número de emisión. P. ej.: <code>ES0113211835</code>.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          LEI (Legal Entity Identifier)
+        </dt>
+        <dd>Código de 20 caracteres que identifica de forma única a una entidad legal (una gestora de fondos, un banco, etc.). Estándar ISO 17442, gestionado globalmente por la LEI Registry. Permite vincular notificaciones de posiciones cortas con la entidad concreta que las envía.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Fecha de posición
+        </dt>
+        <dd>La fecha regulatoria a la que se refiere la posición corta neta. Es la "fecha efectiva" de la posición, no la fecha en que se publicó o se conoció. La CNMV especifica esta fecha en cada notificación.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Fecha de publicación
+        </dt>
+        <dd>La fecha en que la CNMV publicó el documento Excel (NetShortPositions.xls) con las posiciones de ese día. Puede ser posterior a la fecha de posición, ya que la notificación de los fondos puede llegar con cierto retraso.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Captura (snapshot)
+        </dt>
+        <dd>Cada vez que se descarga el documento oficial de la CNMV, se guarda como una "captura" inmutable identificada por su hash SHA-256. Cada captura es una instantánea del documento en un momento concreto. No se modifica ni se borra nunca.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Verificación (PASS / FAIL)
+        </dt>
+        <dd>shorts-es verifica internamente cada captura comparando la hoja "Current" (datos actuales) con la hoja "Series" (historial). <strong>PASS</strong> significa que todas las posiciones de la hoja Current se pueden reconstruir exactamente a partir de la Series. <strong>FAIL</strong> indicaría diferencias. Si la verificación no ha corrido, aparecerá como <strong>—</strong>.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Advertencias y limitaciones</h2>
+  <div class="glossary-grid">
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          No es el interés corto total del mercado
+        </dt>
+        <dd>Las posiciones divulgadas son solo aquellas notificadas a la CNMV. No incluyen posiciones no notificadas, posiciones de inversores no regulados, ni derivados no contemplados en la normativa. El interés corto real puede ser muy superior a lo mostrado aquí.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          La fuente oficial prevalece
+        </dt>
+        <dd>shorts-es es un proyecto personal que descarga, analiza y presenta datos públicos de la CNMV. <strong>La fuente oficial (la CNMV) siempre prevalece.</strong> Si encuentras discrepancias, compáralas con el documento original de la CNMV.</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Absencia no implica cero
+        </dt>
+        <dd>Si un titular no aparece en la lista de posiciones publicadas para un emisor, <strong>no significa que su posición sea cero</strong>. Solo significa que no está entre las divulgadas públicamente. Puede haber salido de la lista de divulgación (por debajo del umbral o sin cierre explícito).</dd>
+      </dl>
+    </div>
+    <div class="glossary-item">
+      <dl>
+        <dt>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Sin valor predictivo
+        </dt>
+        <dd>Los datos mostrados <strong>no constituyen consejo de inversión</strong> ni señal de trading. Son datos públicos de cumplimiento regulatorio, presentados tal como los publica la CNMV sin interpretación ni predicción.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<div class="disclaimer">
+  <strong>⚠️ Advertencia:</strong> shorts-es es un proyecto personal de portfolio.
+  No es un producto oficial de la CNMV ni de ningún regulador.
+  La fuente oficial prevalece. Las posiciones divulgadas no constituyen el interés corto total del mercado.
+  Este sitio no ofrece consejos de inversión.
+</div>
+{% endblock %}

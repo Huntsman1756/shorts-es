@@ -1,41 +1,84 @@
 {% extends "base.html" %}
-{% block title %}Snapshot {{ snapshot.snapshot_sha256[:12] }} — shorts-es{% endblock %}
+{% block title %}Captura {{ snapshot.snapshot_sha256[:16] }} — shorts-es{% endblock %}
 {% block content %}
-<h1>Snapshot <code>{{ snapshot.snapshot_sha256[:16] }}…</code></h1>
-<dl class="kv wide">
-  <dt>SHA-256</dt><dd><code>{{ snapshot.snapshot_sha256 }}</code></dd>
-  <dt>Retrieved at</dt><dd>{{ snapshot.retrieved_at }}</dd>
-  <dt>Source URL</dt><dd><a href="{{ snapshot.source_url }}">{{ snapshot.source_url }}</a></dd>
-  <dt>Publication date (source)</dt><dd>{{ snapshot.publication_date or "—" }}</dd>
-  <dt>Content</dt><dd>{{ snapshot.content_length }} bytes{% if snapshot.etag %}, ETag <code>{{ snapshot.etag }}</code>{% endif %}</dd>
-  <dt>Parser</dt><dd>{{ snapshot.parser_version }}</dd>
-  <dt>Schema fingerprint</dt><dd><code>{{ snapshot.schema_fingerprint }}</code></dd>
-  <dt>Status</dt><dd>{{ snapshot.status }}</dd>
-</dl>
+<div class="page-header">
+  <h1>Captura <code>{{ snapshot.snapshot_sha256[:16] }}…</code></h1>
+  <p>
+    Detalle de la captura del documento oficial de la CNMV.
+    Cada captura es una <strong>instantánea inmutable</strong> del documento <code>NetShortPositions.xls</code>
+    en el momento en que se descargó.
+  </p>
+</div>
 
-<h2>Sheets</h2>
-<table>
-  <thead><tr><th>#</th><th>Name</th><th class="num">Rows</th><th class="num">Cols</th></tr></thead>
-  <tbody>
-    {% for s in sheets %}
-    <tr><td>{{ s.sheet_order }}</td><td><code>{{ s.sheet_name }}</code></td>
-        <td class="num">{{ s.row_count }}</td><td class="num">{{ s.col_count }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<!-- ——— Metadatos ——— -->
+<section class="section">
+  <h2>Metadatos</h2>
+  <dl class="kv">
+    <dt>SHA-256 (identificador)</dt><dd><code>{{ snapshot.snapshot_sha256 }}</code></dd>
+    <dt>Descargada (UTC)</dt><dd>{{ snapshot.retrieved_at }}</dd>
+    <dt>URL de origen</dt><dd><a href="{{ snapshot.source_url }}">{{ snapshot.source_url }}</a></dd>
+    <dt>Fecha de publicación (CNMV)</dt><dd>{{ snapshot.publication_date or "—" }}</dd>
+    <dt>Tamaño</dt><dd>{{ snapshot.content_length }} bytes{% if snapshot.etag %}, ETag <code>{{ snapshot.etag }}</code>{% endif %}</dd>
+    <dt>Parser utilizado</dt><dd>{{ snapshot.parser_version }}</dd>
+    <dt>Huella del esquema</dt><dd><code>{{ snapshot.schema_fingerprint }}</code></dd>
+    <dt>Estado</dt><dd>{{ snapshot.status }}</dd>
+  </dl>
+</section>
 
-<h2>Verification</h2>
-{% if verification %}
-<p class="verify {{ 'pass' if verification.result == 'PASS' else 'fail' }}">{{ verification.result }}</p>
-<dl class="kv">
-  <dt>Pairs checked</dt><dd>{{ verification.pairs_checked }}</dd>
-  <dt>Exact matches</dt><dd>{{ verification.matched }}</dd>
-  <dt>Missing</dt><dd>{{ verification.missing }}</dd>
-  <dt>Unexpected</dt><dd>{{ verification.unexpected }}</dd>
-  <dt>Conflicts</dt><dd>{{ verification.conflicts }}</dd>
-  <dt>Verified at</dt><dd>{{ verification.verified_at }}</dd>
-</dl>
-{% else %}
-<p class="muted">Not run for this snapshot. Run <code>shorts-es verify {{ snapshot.snapshot_sha256[:12] }}</code>.</p>
-{% endif %}
+<!-- ——— Hojas del documento ——— -->
+<section class="section">
+  <h2>Hojas del documento</h2>
+  <p class="muted">
+    El documento Excel de la CNMV contiene varias hojas. La hoja <strong>Current</strong> tiene las posiciones
+    publicadas actualmente; la hoja <strong>Series</strong> tiene el historial completo de todas las posiciones
+    ever divulgadas.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre de la hoja</th>
+          <th class="num">Filas</th>
+          <th class="num">Columnas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sheets %}
+        <tr>
+          <td>{{ s.sheet_order }}</td>
+          <td><code>{{ s.sheet_name }}</code></td>
+          <td class="num">{{ s.row_count }}</td>
+          <td class="num">{{ s.col_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ——— Verificación ——— -->
+<section class="section">
+  <h2>Verificación</h2>
+  {% if verification %}
+  <div class="verify {{ 'pass' if verification.result == 'PASS' else 'fail' }}">
+    {{ verification.result }}
+  </div>
+  <dl class="kv">
+    <dt>Pares verificados</dt><dd>{{ verification.pairs_checked }}</dd>
+    <dt>Coincidencias exactas</dt><dd>{{ verification.matched }}</dd>
+    <dt>Ausentes</dt><dd>{{ verification.missing }}</dd>
+    <dt>Unexpectedos</dt><dd>{{ verification.unexpected }}</dd>
+    <dt>Conflictos</dt><dd>{{ verification.conflicts }}</dd>
+    <dt>Verificada</dt><dd>{{ verification.verified_at }}</dd>
+  </dl>
+  <p class="muted small">
+    La verificación reconstruye las posiciones de la hoja "Current" a partir de la hoja "Series"
+    y las compara con las posiciones publicadas por la CNMV. Un resultado <strong>PASS</strong>
+    significa que todas las posiciones coinciden exactamente.
+  </p>
+  {% else %}
+  <p class="muted">Verificación pendiente. Ejecuta <code>shorts-es verify {{ snapshot.snapshot_sha256[:12] }}</code>.</p>
+  {% endif %}
+</section>
 {% endblock %}

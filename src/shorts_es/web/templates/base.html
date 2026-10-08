@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,29 +7,70 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="wrap">
-    <a class="brand" href="/">shorts-es</a>
-    <span class="tagline">Reproducible CNMV public net short positions</span>
-    <nav>
-      <a href="/issuers">issuers</a>
-      <a href="/holders">holders</a>
-      <a href="/snapshots">snapshots</a>
-      <a href="/methodology">methodology</a>
-      <a href="/api/v1/dataset">api</a>
-    </nav>
-  </div>
-</header>
-<main class="wrap">
-  {% block content %}{% endblock %}
-</main>
-<footer class="wrap">
-  <p class="muted">
-    shorts-es v{{ version }} · parser {{ constants.PARSER_VERSION }} ·
-    Not an official CNMV product. The
-    <a href="{{ constants.SOURCE_URL }}">source</a> prevails.
-    Publicly disclosed positions are not total short interest.
-  </p>
-</footer>
+  <a class="sr-only" href="#contenido">Saltar al contenido</a>
+
+  <header class="topbar" role="banner">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="shorts-es — página principal">
+        <!-- Icono: gráfico de barras minimalista -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <rect x="3" y="12" width="4" height="9" rx="1"/>
+          <rect x="10" y="7" width="4" height="14" rx="1"/>
+          <rect x="17" y="3" width="4" height="18" rx="1"/>
+        </svg>
+        shorts-es
+      </a>
+      <p class="tagline" style="color:var(--muted);font-size:.82rem;flex:1;margin:0;">
+        Posiciones cortas netas públicas de la CNMV
+      </p>
+      <button class="nav-toggle" aria-label="Abrir menú de navegación"
+              aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true')">
+        ☰
+      </button>
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="/"          {% if request.path == '/' %}aria-current="page"{% endif %}>Inicio</a>
+        <a href="/issuers"   {% if request.path == '/issuers' %}aria-current="page"{% endif %}>Emisores</a>
+        <a href="/holders"   {% if request.path == '/holders' %}aria-current="page"{% endif %}>Titulares</a>
+        <a href="/snapshots" {% if request.path == '/snapshots' or request.path.startswith('/snapshots/') %}aria-current="page"{% endif %}>Capturas</a>
+        <a href="/glossary"  {% if request.path == '/glossary' %}aria-current="page"{% endif %}>Glosario</a>
+        <a href="/methodology">Metodología</a>
+        <a href="/api/v1/dataset">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido" class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="wrap">
+      <div class="footer-inner">
+        <div class="footer-copy">
+          <p>
+            shorts-es v{{ version }} · parser {{ constants.PARSER_VERSION }}
+          </p>
+          <p>
+            No es un producto oficial de la CNMV. La fuente oficial prevalece siempre.
+            <a href="{{ constants.SOURCE_URL }}">Ver el documento original →</a>
+          </p>
+          <p>
+            Las posiciones divulgadas públicamente no constituyen el interés corto total del mercado.
+          </p>
+        </div>
+        <div class="footer-links">
+          <strong>Enlaces rápidos</strong>
+          <a href="/issuers">Emisores</a>
+          <a href="/holders">Titulares</a>
+          <a href="/snapshots">Capturas históricas</a>
+          <a href="/methodology">Metodología</a>
+          <a href="/glossary">Glosario</a>
+          <a href="/api/v1/dataset">API JSON</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

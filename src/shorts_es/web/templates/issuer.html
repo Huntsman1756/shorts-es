@@ -1,69 +1,139 @@
 {% extends "base.html" %}
 {% block title %}{{ issuer.issuer_name }} — shorts-es{% endblock %}
 {% block content %}
-<h1>{{ issuer.issuer_name }}</h1>
-<p class="muted">
-  ISIN <code>{{ issuer.isin }}</code> · LEI <code>{{ issuer.lei }}</code> ·
-  snapshot <a href="/snapshots/{{ snapshot.snapshot_sha256 }}"><code>{{ snapshot.snapshot_sha256[:12] }}…</code></a>
-</p>
+<div class="page-header">
+  <h1>{{ issuer.issuer_name }}</h1>
+  <p>
+    Emisor · ISIN <code>{{ issuer.isin }}</code> · LEI <code>{{ issuer.lei }}</code> ·
+    Captura <a href="/snapshots/{{ snapshot.snapshot_sha256 }}">
+    <code>{{ snapshot.snapshot_sha256[:16] }}…</code></a>
+  </p>
+</div>
 
-<h2>Current publicly disclosed positions</h2>
-<table>
-  <thead><tr><th>Holder</th><th class="num">Net short %</th><th>Position date</th><th></th></tr></thead>
-  <tbody>
-    {% for s in in_current %}
-    <tr>
-      <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
-      <td class="num">{{ s.position_pct }}</td>
-      <td>{{ s.position_date }}</td>
-      <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">source</a></td>
-    </tr>
-    {% else %}
-    <tr><td colspan="4" class="muted">No currently published positions.</td></tr>
-    {% endfor %}
-  </tbody>
-  <tfoot>
-    <tr><th>Publicly disclosed total</th><th class="num">{{ disclosed_total }}</th><th colspan="2"></th></tr>
-  </tfoot>
-</table>
-<p class="muted small">Sum of publicly disclosed individual positions.
-<strong>This is not total short interest.</strong> Values below the 0.5 %
-mandatory-disclosure threshold are included because CNMV publishes all
-notified positions.</p>
+<div class="info">
+  <p>
+    Esta página muestra las posiciones cortas netas <strong>publicadas actualmente</strong>
+    para el emisor {{ issuer.issuer_name }} (ISIN <code>{{ issuer.isin }}</code>).
+    Cada fila indica un titular que tiene una posición corta por encima del umbral de divulgación
+    del 0,5 % del capital de esta empresa.
+  </p>
+  <p>
+    La suma de todos los porcentajes es el <strong>porcentaje total divulgado</strong>.
+    <strong>Esto no es el interés corto total del mercado</strong>, solo lo que las gestoras
+    han notificado a la CNMV.
+  </p>
+</div>
 
+<!-- ——— Posiciones publicadas actualmente ——— -->
+<section class="section">
+  <h2>Posiciones publicadas actualmente</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Titular (gestora/fondo)</th>
+          <th class="num">Posición corta neta % del capital</th>
+          <th>Fecha de posición</th>
+          <th>Procedencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in in_current %}
+        <tr>
+          <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
+          <td class="num">{{ s.position_pct }}</td>
+          <td>{{ s.position_date }}</td>
+          <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="muted">No se encuentran posiciones publicadas actualmente para este emisor.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Total divulgado</th>
+          <th class="num">{{ disclosed_total }}</th>
+          <th colspan="2"></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="muted small">
+    Suma de las posiciones publicadas individualmente. Incluye posiciones por debajo del umbral del 0,5 %
+    (la CNMV publica todas las notificaciones) y las 0,00 % de cierre.
+  </p>
+</section>
+
+<!-- ——— Pares ya no publicados ——— -->
 {% if not_current %}
-<h2>Pairs no longer published</h2>
-<p class="muted small">These pairs have published history but no entry in the
-source Current sheet. The last published value is shown; absence of a
-disclosure is <strong>not</strong> evidence the position is zero.</p>
-<table>
-  <thead><tr><th>Holder</th><th class="num">Last published %</th><th>Last position date</th><th></th></tr></thead>
-  <tbody>
-    {% for s in not_current %}
-    <tr>
-      <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
-      <td class="num">{{ s.position_pct }}</td>
-      <td>{{ s.position_date }}</td>
-      <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">source</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="section">
+  <h2>Posiciones ya no publicadas</h2>
+  <div class="info info--amber">
+    <p>
+      <strong>Importante:</strong> estas combinaciones (titular, emisor) tuvieron posiciones publicadas en el pasado,
+      pero actualmente no tienen entrada en la hoja "Current" del documento.
+      <strong>Que no aparezcan no significa que la posición sea cero.</strong>
+      Puede ser que la gestora haya salido del umbral de divulgación sin notificarlo,
+      o que la CNMV no haya publicado el cierre explícito.
+    </p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Titular</th>
+          <th class="num">Última posición publicada</th>
+          <th>Fecha de posición</th>
+          <th>Procedencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in not_current %}
+        <tr>
+          <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
+          <td class="num">{{ s.position_pct }}</td>
+          <td>{{ s.position_date }}</td>
+          <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endif %}
 
-<h2>Disclosure history</h2>
-<table>
-  <thead><tr><th>Date</th><th class="num">%</th><th>Holder</th><th>First observed</th><th></th></tr></thead>
-  <tbody>
-    {% for r in history %}
-    <tr>
-      <td>{{ r.position_date }}</td>
-      <td class="num">{{ r.position_pct }}</td>
-      <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
-      <td class="muted">{{ r.first_observed_at[:10] }}</td>
-      <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">source</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<!-- ——— Historial de divulgaciones ——— -->
+<section class="section">
+  <h2>Historial de divulgaciones</h2>
+  <p class="muted">
+    Todas las veces que se ha comunicado una posición corta neta para este emisor,
+    ordenadas por fecha de posición (de más reciente a más antigua).
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha de posición</th>
+          <th class="num">%</th>
+          <th>Titular</th>
+          <th>Primera observación</th>
+          <th>Procedencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in history %}
+        <tr>
+          <td>{{ r.position_date }}</td>
+          <td class="num">{{ r.position_pct }}</td>
+          <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
+          <td class="muted">{{ r.first_observed_at[:10] }}</td>
+          <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

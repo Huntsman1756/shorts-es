@@ -1,35 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Disclosure — shorts-es{% endblock %}
+{% block title %}Divulgación {{ d.disclosure_id[:12] }} — shorts-es{% endblock %}
 {% block content %}
-<h1>Disclosure</h1>
-<dl class="kv wide">
-  <dt>ID (SHA-256 of canonical row)</dt><dd><code>{{ d.disclosure_id }}</code></dd>
-  <dt>Issuer</dt><dd><a href="/issuer/{{ d.isin }}">{{ d.issuer_name }}</a></dd>
-  <dt>ISIN</dt><dd><code>{{ d.isin }}</code></dd>
-  <dt>LEI</dt><dd><code>{{ d.lei }}</code></dd>
-  <dt>Holder</dt><dd><a href="/holder/{{ d.holder_name | urlencode }}">{{ d.holder_name }}</a></dd>
-  <dt>Position date</dt><dd>{{ d.position_date }}</dd>
-  <dt>Net short position</dt><dd class="num">{{ d.position_pct }} %</dd>
-  <dt>First observed</dt><dd>{{ d.first_observed_at }}</dd>
-  <dt>Canonical payload</dt><dd><code class="json">{{ d.canonical_json }}</code></dd>
-</dl>
+<div class="page-header">
+  <h1>Divulgación</h1>
+  <p class="muted">Ficha completa de la divulgación con rastro de procedencia.</p>
+</div>
 
-<h2>Provenance</h2>
-<p class="muted">Physical locations where this exact disclosure appeared.</p>
-<table>
-  <thead><tr><th>Snapshot</th><th>Sheet</th><th class="num">Row</th><th>Retrieved</th><th>Parser</th></tr></thead>
-  <tbody>
-    {% for l in prov.locations %}
-    <tr>
-      <td><a href="/snapshots/{{ l.snapshot_sha256 }}"><code>{{ l.snapshot_sha256[:16] }}…</code></a></td>
-      <td><code>{{ l.sheet_name }}</code></td>
-      <td class="num">{{ l.row_number }}</td>
-      <td>{{ l.retrieved_at }}</td>
-      <td class="muted">{{ l.parser_version }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<p class="muted">Original source: {{ source.authority }} —
-<a href="{{ source.source_url }}">{{ source.workbook }}</a></p>
+<!-- ——— Datos de la divulgación ——— -->
+<section class="section">
+  <h2>Datos de la divulgación</h2>
+  <dl class="kv">
+    <dt>ID (SHA-256 de la fila canónica)</dt><dd><code>{{ d.disclosure_id }}</code></dd>
+    <dt>Emisor</dt><dd><a href="/issuer/{{ d.isin }}">{{ d.issuer_name }}</a></dd>
+    <dt>ISIN</dt><dd><code>{{ d.isin }}</code></dd>
+    <dt>LEI del titular</dt><dd><code>{{ d.lei }}</code></dd>
+    <dt>Titular (gestora/fondo)</dt><dd><a href="/holder/{{ d.holder_name | urlencode }}">{{ d.holder_name }}</a></dd>
+    <dt>Fecha de posición</dt><dd>{{ d.position_date }}</dd>
+    <dt>Posición corta neta</dt><dd class="num">{{ d.position_pct }} % del capital</dd>
+    <dt>Primera observación</dt><dd>{{ d.first_observed_at }}</dd>
+    <dt>Payload canónico</dt><dd><code class="json">{{ d.canonical_json }}</code></dd>
+  </dl>
+</section>
+
+<!-- ——— Procedencia ——— -->
+<section class="section">
+  <h2>Procedencia</h2>
+  <p class="muted">
+    Ubicaciones físicas donde apareció exactamente esta divulgación.
+    Una misma notificación puede aparecer en múltiples hojas y capturas.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Captura</th>
+          <th>Hoja</th>
+          <th class="num">Fila</th>
+          <th>Descargada</th>
+          <th>Parser</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in prov.locations %}
+        <tr>
+          <td><a href="/snapshots/{{ l.snapshot_sha256 }}">
+            <code>{{ l.snapshot_sha256[:16] }}…</code></a>
+          </td>
+          <td><code>{{ l.sheet_name }}</code></td>
+          <td class="num">{{ l.row_number }}</td>
+          <td>{{ l.retrieved_at }}</td>
+          <td class="muted">{{ l.parser_version }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    Fuente original: {{ source.authority }} —
+    <a href="{{ source.source_url }}">{{ source.workbook }}</a>
+  </p>
+</section>
 {% endblock %}

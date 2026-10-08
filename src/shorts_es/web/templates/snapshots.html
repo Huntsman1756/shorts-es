@@ -1,24 +1,71 @@
 {% extends "base.html" %}
-{% block title %}Snapshots — shorts-es{% endblock %}
+{% block title %}Capturas históricas — shorts-es{% endblock %}
 {% block content %}
-<h1>Snapshots</h1>
-<p class="muted">Every distinct publication is kept immutably, addressed by
-the SHA-256 of its raw bytes.</p>
-<table>
-  <thead><tr><th>Retrieved (UTC)</th><th>SHA-256</th><th>Status</th><th>Published</th><th class="num">Rows</th><th>Verify</th></tr></thead>
-  <tbody>
-    {% for s in snapshots %}
-    <tr>
-      <td>{{ s.retrieved_at }}</td>
-      <td><a href="/snapshots/{{ s.snapshot_sha256 }}"><code>{{ s.snapshot_sha256[:16] }}…</code></a></td>
-      <td>{{ s.status }}</td>
-      <td>{{ s.publication_date or "—" }}</td>
-      <td class="num">{{ s.n_rows }}</td>
-      <td>{% if s.verification %}<span class="verify {{ 'pass' if s.verification.result == 'PASS' else 'fail' }}">{{ s.verification.result }}</span>{% else %}—{% endif %}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="6" class="muted">No snapshots yet. Run <code>shorts-es sync</code>.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="page-header">
+  <h1>Capturas históricas</h1>
+  <p>
+    Cada vez que se descarga el documento oficial de la CNMV (<code>NetShortPositions.xls</code>),
+    se guarda como una <strong>captura inmutable</strong> identificada por su hash SHA-256.
+    No se modifica ni se borra nunca: es una instantánea de lo que publicó la CNMV en ese momento.
+  </p>
+</div>
+
+<div class="info">
+  <p>
+    <strong>SHA-256</strong>: identificador criptográfico único del documento original. Si los bytes del archivo
+    son idénticos, el hash es idéntico. Permite verificar que el documento no ha sido modificado.
+  </p>
+  <p>
+    <strong>Fecha de publicación</strong>: la fecha que la CNMV indica en el documento para esa captura.
+    Puede ser distinta de la fecha de posición (que es la regulatoria).
+  </p>
+  <p>
+    <strong>Estado (status)</strong>: si la captura se descargó correctamente (<code>OK</code>) o si hubo algún problema.
+  </p>
+  <p>
+    <strong>Verificación</strong>: PASS significa que todas las posiciones de la hoja "Current" del documento
+    se pueden reconstruir exactamente a partir de la hoja "Series".
+  </p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Descargada (UTC)</th>
+        <th>SHA-256</th>
+        <th>Estado</th>
+        <th>Publicada</th>
+        <th class="num">Filas</th>
+        <th>Verificación</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in snapshots %}
+      <tr>
+        <td>{{ s.retrieved_at }}</td>
+        <td><a href="/snapshots/{{ s.snapshot_sha256 }}">
+          <code>{{ s.snapshot_sha256[:16] }}…</code></a>
+        </td>
+        <td>{{ s.status }}</td>
+        <td>{{ s.publication_date or "—" }}</td>
+        <td class="num">{{ s.n_rows }}</td>
+        <td>
+          {% if s.verification %}
+            <span class="verify {{ 'pass' if s.verification.result == 'PASS' else 'fail' }}">
+              {{ s.verification.result }}
+            </span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="empty-state">
+          <p>NO hay capturas aún. Ejecuta <code>shorts-es sync</code>.</p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
