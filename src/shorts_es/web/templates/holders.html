@@ -27,28 +27,97 @@
   </p>
 </div>
 
+<!-- ——— Barra de búsqueda / filtro ——— -->
+<form class="search" action="/holders" method="get" role="search">
+  <input type="search" name="q" value="{{ q or '' }}"
+         placeholder="Filtrar por nombre o LEI" aria-label="Filtrar titulares">
+  <button type="submit">Filtrar</button>
+</form>
+
+<!-- ——— Tabla principal (escritorio) ——— -->
 <div class="table-wrap">
-  <table>
+  <table class="compact-table">
     <thead>
       <tr>
-        <th>Entidad</th>
-        <th class="num">Posiciones</th>
-        <th class="num">Emisores</th>
-        <th class="num">Divulgado % del capital</th>
-        <th>Última posición</th>
+        <th scope="col">Entidad</th>
+        <th scope="col" class="num">
+          <a href="/holders{{ sort_link_params('positions', 'desc' if sort != 'positions' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por número de posiciones">
+            Posiciones
+            <span class="sort-arrow{% if sort == 'positions' %} active{% endif %}">{{ '▼' if sort == 'positions' and dir == 'desc' else '▲' if sort == 'positions' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
+        <th scope="col" class="num">
+          <a href="/holders{{ sort_link_params('issuers', 'desc' if sort != 'issuers' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por número de emisores">
+            Emisores
+            <span class="sort-arrow{% if sort == 'issuers' %} active{% endif %}">{{ '▼' if sort == 'issuers' and dir == 'desc' else '▲' if sort == 'issuers' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
+        <th scope="col" class="num"
+            aria-sort="{{ 'descending' if sort == 'capital' and dir == 'desc' else ('ascending' if sort == 'capital' and dir == 'asc' else 'none') }}">
+          <a href="/holders{{ sort_link_params('capital', 'desc' if sort != 'capital' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por porcentaje">
+            Divulgado % del capital
+            <span class="sort-arrow{% if sort == 'capital' %} active{% endif %}">{{ '▼' if sort == 'capital' and dir == 'desc' else '▲' if sort == 'capital' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
+        <th scope="col" class="date-col"
+            aria-sort="{{ 'descending' if sort == 'date' and dir == 'desc' else ('ascending' if sort == 'date' and dir == 'asc' else 'none') }}">
+          <a href="/holders{{ sort_link_params('date', 'desc' if sort != 'date' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por fecha">
+            Última posición
+            <span class="sort-arrow{% if sort == 'date' %} active{% endif %}">{{ '▼' if sort == 'date' and dir == 'desc' else '▲' if sort == 'date' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-row-widescreen">
       {% for h in holders %}
       <tr>
-        <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
-        <td class="num">{{ h.positions }}</td>
-        <td class="num">{{ h.issuers }}</td>
-        <td class="num">{{ h.disclosed_total }}</td>
-        <td>{{ h.last_position_date }}</td>
+        <td class="col-entity col-compact">
+          <span class="entity-name"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></span>
+        </td>
+        <td class="num col-num">{{ h.positions }}</td>
+        <td class="num col-num">{{ h.issuers }}</td>
+        <td class="num">
+          <div class="pct-cell">
+            <span class="pct-bar" style="width:{{ pct_width(h.disclosed_total, max_pct) }}px;"
+                 aria-label="{{ h.disclosed_total }}%"></span>
+            <span class="pct-value">{{ h.disclosed_total }}%</span>
+          </div>
+        </td>
+        <td class="col-date">{{ h.last_position_date }}</td>
+      </tr>
+
+      <!-- Card mode (móvil y tablet) -->
+      <tr class="table-row-cards">
+        <td colspan="5">
+          <div class="card-row">
+            <div class="card-label">Entidad</div>
+            <div class="card-value"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></div>
+
+            <div class="card-label">Posiciones</div>
+            <div class="card-value">{{ h.positions }}</div>
+
+            <div class="card-label">Emisores</div>
+            <div class="card-value">{{ h.issuers }}</div>
+
+            <div class="card-label">Divulgado % del capital</div>
+            <div class="card-value">{{ h.disclosed_total }}%</div>
+
+            <div class="card-label">Última posición</div>
+            <div class="card-value">{{ h.last_position_date }}</div>
+          </div>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+{% if holders | length == 0 %}
+<p class="muted">No se encontraron titulares con el filtro aplicado.</p>
+{% endif %}
+
 {% endblock %}

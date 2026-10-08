@@ -130,6 +130,10 @@ code {
 }
 code.json { word-break: break-all; }
 
+/* URLs largas (fuentes CNMV, enlaces a registros): deben poder partirse en móvil
+   en vez de arrastrar toda la página a lo ancho */
+main, main a, main code, .source-url { overflow-wrap: anywhere; }
+
 small { font-size: 0.85em; }
 
 /* ——— Layout ——— */
@@ -313,41 +317,147 @@ main {
   background: var(--bg);
 }
 
-table {
+/* Wide tables: fit on screen at ≥1024px by compacting */
+.compact-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
-  white-space: nowrap;
+  font-size: 0.88rem;
 }
 
-th, td {
+.compact-table th,
+.compact-table td {
   text-align: left;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
 
-thead th {
+.compact-table thead th {
   font-weight: 600;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   background: var(--bg-alt);
   border-bottom: 2px solid var(--line);
   position: sticky;
   top: 0;
+  white-space: nowrap;
 }
 
-tbody tr:hover { background: var(--line-soft); }
+.compact-table tbody tr:hover { background: var(--line-soft); }
+.compact-table tfoot th { border-top: 2px solid var(--fg); }
 
-tfoot th { border-top: 2px solid var(--fg); }
+/* Column classes */
+.col-compact {
+  white-space: normal;
+  min-width: 140px;
+  max-width: 280px;
+}
+
+.col-compact .entity-name {
+  font-weight: 600;
+  color: var(--fg);
+  display: block;
+  line-height: 1.3;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+.col-compact .entity-name a { color: inherit; }
+.col-compact .entity-name a:hover { text-decoration: underline; }
+
+.col-compact .entity-codes {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.col-compact .entity-codes code {
+  background: var(--panel);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 0.82em;
+  white-space: nowrap;
+}
+.col-compact .entity-codes a {
+  font-size: 0.75rem;
+  color: var(--muted-light);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.35em;
+  background: var(--panel);
+  transition: color .15s, border-color .15s;
+}
+.col-compact .entity-codes a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 
 .num {
   text-align: right;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* Sorting headers */
+.sort-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sort-link:hover { text-decoration: underline; }
+.sort-arrow {
+  font-size: 0.7em;
+  opacity: 0.4;
+}
+.sort-arrow.active { opacity: 1; }
+
+/* ——— Percentage bars ——— */
+.pct-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pct-bar {
+  flex: 0 0 0;
+  height: 100%;
+  min-height: 1.2em;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.6;
+  transition: width .3s ease;
+  max-width: 100px;
+}
+
+.pct-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 4ch;
+  text-align: right;
+  font-size: 0.92rem;
+}
+
+/* ——— Data-label cards for narrow screens ——— */
+.card-row {
+  display: none;
+}
+
+/* `.table-row-widescreen` es solo una marca para el modo móvil: en escritorio no
+   necesita regla propia, el tbody/tr ya se comportan como tabla. */
+
+.table-row-cards {
+  display: none;
 }
 
 .muted { color: var(--muted); }
@@ -392,11 +502,13 @@ tfoot th { border-top: 2px solid var(--fg); }
 /* ——— Search form ——— */
 .search {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: var(--space-6) 0;
 }
 .search input {
-  flex: 1;
+  flex: 1 1 10rem;
+  min-width: 0;
   font: inherit;
   font-family: var(--mono);
   padding: var(--space-2) var(--space-3);
@@ -547,13 +659,164 @@ tfoot th { border-top: 2px solid var(--fg); }
   .kv { grid-template-columns: 1fr; gap: var(--space-1) var(--space-2); }
   .footer-inner { flex-direction: column; }
 
-  table { font-size: 0.85rem; }
-  th, td { padding: var(--space-2) var(--space-3); }
+  /* Hide the wide table, show card mode */
+  .table-wrap {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
+  }
+  .table-row-cards { display: block; }
+  .card-row {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+    background: var(--bg);
+  }
+  .card-row .card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-light);
+    margin-bottom: 1px;
+  }
+  .card-row .card-value {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 0;
+  }
+  .card-row .pct-cell {
+    flex-wrap: wrap;
+  }
+  .card-row .pct-bar {
+    display: none;
+  }
+}
+
+/* 360-414px mobile: ensure cards fit */
+@media (max-width: 420px) {
+  .wrap { padding: 0 var(--space-3); }
+  .card-row {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* 768px tablet: cards still, but wider layout */
+@media (min-width: 421px) and (max-width: 768px) {
+  .table-wrap {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
+  }
+  .table-row-cards { display: block; }
+  .card-row {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+    background: var(--bg);
+  }
+  .card-row .card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-light);
+    margin-bottom: 1px;
+  }
+  .card-row .card-value {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 0;
+  }
+  .card-row .pct-bar { display: none; }
+}
+
+/* Desktop: force tables to fit at 1024px+ */
+@media (min-width: 1024px) {
+  .table-wrap {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
+  }
+  .compact-table {
+    table-layout: fixed;
+  }
+  .compact-table .col-compact { max-width: 220px; }
+  .compact-table .col-entity { min-width: 180px; max-width: 280px; }
+  .compact-table .col-num { width: 100px; }
+  .compact-table .col-date { width: 110px; }
+  .compact-table .col-meta { width: 100px; }
+  .compact-table .col-prov { width: 90px; }
+  .compact-table .col-actions { width: 80px; }
 }
 
 @media (min-width: 721px) and (max-width: 960px) {
   .card-grid { grid-template-columns: repeat(2, 1fr); }
   .glossary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ——— Modo tarjeta fiable (≤768px) ———
+   Solo afecta a tablas que traen variante .table-row-cards. La cabecera se oculta
+   porque es la que fija el ancho de las 5-6 columnas y provoca el desplazamiento
+   horizontal; la tabla pasa a bloque para que el ancho lo marque la tarjeta. */
+@media (max-width: 768px) {
+  .table-wrap:has(.table-row-cards) {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
+  }
+
+  .compact-table:has(.table-row-cards) {
+    display: block;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .compact-table:has(.table-row-cards) thead { display: none; }
+
+  .compact-table:has(.table-row-cards) tbody,
+  .compact-table:has(.table-row-cards) tbody.table-row-widescreen {
+    display: block;
+    width: 100%;
+  }
+
+  .compact-table:has(.table-row-cards) tbody > tr {
+    display: block;
+    width: 100%;
+  }
+
+  /* Las filas de escritorio no se muestran; las de tarjeta sí */
+  .compact-table:has(.table-row-cards) tbody > tr:not(.table-row-cards) { display: none; }
+
+  .compact-table:has(.table-row-cards) tr.table-row-cards > td {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+  }
+
+  /* Anula los anchos mínimos de escritorio, que son la otra fuente de desbordamiento */
+  .compact-table:has(.table-row-cards) .col-compact,
+  .compact-table:has(.table-row-cards) .col-entity,
+  .compact-table:has(.table-row-cards) .col-num,
+  .compact-table:has(.table-row-cards) .col-date,
+  .compact-table:has(.table-row-cards) .col-meta,
+  .compact-table:has(.table-row-cards) .col-prov,
+  .compact-table:has(.table-row-cards) .col-actions {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  /* Tablas sin variante de tarjeta (cambios, capturas): scroll dentro de su caja,
+     nunca de la página */
+  .table-wrap:not(:has(.table-row-cards)) { overflow-x: auto; }
 }
 
 /* ——— Print ——— */

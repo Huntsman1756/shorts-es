@@ -32,6 +32,8 @@ def default_data_dir() -> Path:
 @dataclass(frozen=True)
 class Config:
     data_dir: Path
+    # Retention: how many raw .xls snapshots to keep (0 = unlimited).
+    max_snapshots: int = 0
 
     @property
     def db_path(self) -> Path:
@@ -50,6 +52,10 @@ class Config:
         self.snapshots_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod
-    def resolve(cls, data_dir: str | Path | None = None) -> Config:
+    def resolve(
+        cls,
+        data_dir: str | Path | None = None,
+        max_snapshots: int = 0,
+    ) -> Config:
         path = Path(data_dir).expanduser() if data_dir else default_data_dir()
-        return cls(data_dir=path)
+        return cls(data_dir=path, max_snapshots=max_snapshots)

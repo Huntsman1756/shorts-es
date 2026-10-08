@@ -5,6 +5,13 @@
 <!-- ——— Hero / portada ——— -->
 <div class="page-header">
   <h1>Posiciones cortas netas públicas de la CNMV</h1>
+  <p class="muted">
+    {% if data.latest_snapshot %}
+      Datos de la CNMV · {{ data.latest_snapshot.publication_date or "—" }}
+    {% else %}
+      Sin datos cargados aún.
+    {% endif %}
+  </p>
   <p>
     shorts-es descarga, analiza y presenta las posiciones cortas netas que los fondos y gestoras
     están obligados a comunicar a la Comisión Nacional del Mercado de Valores (CNMV) cuando superan
@@ -174,25 +181,33 @@
       <strong>No es el interés corto total del mercado</strong>, solo lo que los fondos han notificado a la CNMV.
     </p>
   </div>
+
+  {% set max_pct = max_pct_i %}
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Empresa</th>
-          <th>ISIN</th>
-          <th class="num">Divulgado % del capital</th>
-          <th class="num">Titulares</th>
-          <th>Última posición</th>
+          <th scope="col">Empresa</th>
+          <th scope="col" class="num">Divulgado % del capital</th>
+          <th scope="col" class="num">Titulares</th>
+          <th scope="col" class="date-col">Última posición</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for i in top_issuers %}
         <tr>
-          <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
-          <td><code>{{ i.isin }}</code></td>
-          <td class="num">{{ i.disclosed_total }}</td>
-          <td class="num">{{ i.funds }}</td>
-          <td>{{ i.last_position_date }}</td>
+          <td class="col-entity col-compact">
+            <span class="entity-name"><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></span>
+          </td>
+          <td class="num">
+            <div class="pct-cell">
+              <span class="pct-bar" style="width:{{ pct_width(i.disclosed_total, max_pct) }}px;"
+                   aria-label="{{ i.disclosed_total }}%"></span>
+              <span class="pct-value">{{ i.disclosed_total }}%</span>
+            </div>
+          </td>
+          <td class="num col-num">{{ i.funds }}</td>
+          <td class="col-date">{{ i.last_position_date }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -211,25 +226,34 @@
     "Posiciones" es el número de emisores diferentes en los que tiene posición corta;
     "Divulgado %" es la suma de sus porcentajes.
   </p>
+  {% set max_pct = max_pct_h %}
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Entidad</th>
-          <th class="num">Posiciones</th>
-          <th class="num">Emisores</th>
-          <th class="num">Divulgado % del capital</th>
-          <th>Última posición</th>
+          <th scope="col">Entidad</th>
+          <th scope="col" class="num">Posiciones</th>
+          <th scope="col" class="num">Emisores</th>
+          <th scope="col" class="num">Divulgado % del capital</th>
+          <th scope="col" class="date-col">Última posición</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for h in top_holders %}
         <tr>
-          <td><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></td>
-          <td class="num">{{ h.positions }}</td>
-          <td class="num">{{ h.issuers }}</td>
-          <td class="num">{{ h.disclosed_total }}</td>
-          <td>{{ h.last_position_date }}</td>
+          <td class="col-entity col-compact">
+            <span class="entity-name"><a href="/holder/{{ h.holder_name | urlencode }}">{{ h.holder_name }}</a></span>
+          </td>
+          <td class="num col-num">{{ h.positions }}</td>
+          <td class="num col-num">{{ h.issuers }}</td>
+          <td class="num">
+            <div class="pct-cell">
+              <span class="pct-bar" style="width:{{ pct_width(h.disclosed_total, max_pct) }}px;"
+                   aria-label="{{ h.disclosed_total }}%"></span>
+              <span class="pct-value">{{ h.disclosed_total }}%</span>
+            </div>
+          </td>
+          <td class="col-date">{{ h.last_position_date }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -248,24 +272,28 @@
     Cada fila representa un titular que tiene posición corta en un emisor concreto en una fecha concreta.
   </p>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Fecha de posición</th>
-          <th>Emisor</th>
-          <th>Titular</th>
-          <th class="num">% del capital</th>
-          <th>Procedencia</th>
+          <th scope="col">Fecha de posición</th>
+          <th scope="col">Emisor</th>
+          <th scope="col">Titular</th>
+          <th scope="col" class="num">%</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for r in latest_rows %}
         <tr>
-          <td>{{ r.position_date }}</td>
-          <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
-          <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
-          <td class="num">{{ r.position_pct }}</td>
-          <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+          <td class="col-date">{{ r.position_date }}</td>
+          <td class="col-entity">
+            <span class="entity-name"><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></span>
+          </td>
+          <td class="col-entity">
+            <a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a>
+          </td>
+          <td class="num col-num">{{ r.position_pct }}</td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
         </tr>
         {% endfor %}
       </tbody>

@@ -49,21 +49,22 @@ def sync(config: Config, file: str | None = None, url: str | None = None) -> Syn
 
     conn = db.open_db(config.db_path)
     try:
-        info = inspect_workbook(fetched.content)
         status = "parsed"
         parsed = None
+        info = None
         err: ShortsEsError | None = None
         try:
+            info = inspect_workbook(fetched.content)
             validate_schema(info)
             log.info("schema_valid fingerprint=%s", info.fingerprint)
             parsed = parse_workbook(fetched.content)
             log.info("parse_complete rows=%d", len(parsed.rows))
         except SchemaDriftError as exc:
-            status = "schema_drift"
+            status = "SCHEMA_DRIFT"
             err = exc
             log.error("schema_drift %s", exc)
         except ShortsEsError as exc:
-            status = "parse_error"
+            status = "PARSE_ERROR"
             err = exc
             log.error("parse_error %s", exc)
 
@@ -93,20 +94,35 @@ def sync(config: Config, file: str | None = None, url: str | None = None) -> Syn
                 if parsed and parsed.publication_date
                 else None,
                 "parser_version": constants.PARSER_VERSION,
-                "schema_fingerprint": info.fingerprint,
-                "physical_fingerprint": info.physical_fingerprint,
+                "schema_fingerprint": info.fingerprint if info else "",
+                "physical_fingerprint": info.physical_fingerprint if info else "",
                 "status": status,
-                "rows": {s.name: s.nrows for s in info.sheets},
+                "rows": {s.name: s.nrows for s in info.sheets} if info else {},
             },
         )
 
-        if err is not None:
+        # Re-raise only for schema drift (source format changed)
+        # parse_error from inspect_workbook (bad file format) is OK to return silently
+        if err is not None and isinstance(err, SchemaDriftError):
             raise err
 
         new_disc = sum(1 for _ in repo.disclosure_ids_since_snapshot(conn, stored.sha256))
+
+        # Enforce retention policy (if configured)
+        if config.max_snapshots > 0:
+            result_ret = repo.enforce_retention(conn, config.snapshots_dir, config.max_snapshots)
+            if result_ret["removed"]:
+                log.info(
+                    "retention_enforced removed=%d kept=%d",
+                    len(result_ret["removed"]),
+                    result_ret["kept"],
+                )
+
+        # Use the error status if there was a problem
+        result_status = status if status != "parsed" else ("CREATED" if outcome == "created" else "UPDATED")
         return SyncResult(
             sha256=stored.sha256,
-            status="CREATED" if outcome == "created" else "UPDATED",
+            status=result_status,
             retrieved_at=stored.retrieved_at.isoformat(),
             new_disclosures=new_disc,
             total_rows=len(parsed.rows) if parsed else 0,

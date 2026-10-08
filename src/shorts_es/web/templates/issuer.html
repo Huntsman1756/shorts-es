@@ -3,10 +3,40 @@
 {% block content %}
 <div class="page-header">
   <h1>{{ issuer.issuer_name }}</h1>
-  <p>
+  <p class="muted">
     Emisor · ISIN <code>{{ issuer.isin }}</code> · LEI <code>{{ issuer.lei }}</code> ·
     Captura <a href="/snapshots/{{ snapshot.snapshot_sha256 }}">
     <code>{{ snapshot.snapshot_sha256[:16] }}…</code></a>
+  </p>
+</div>
+
+<!-- ——— Bloque "Más información" ——— -->
+<div class="info">
+  <p><strong>Más información sobre este emisor</strong></p>
+  <dl class="kv">
+    <dt>ISIN</dt>
+    <dd><code>{{ issuer.isin }}</code> ·
+      <a href="https://www.openfigi.com/search?q={{ issuer.isin }}"
+         target="_blank" rel="noopener noreferrer"
+         title="Buscar este ISIN en OpenFIGI, el catálogo de identificadores financieros de Bloomberg">
+        Buscar en OpenFIGI ↗</a>
+    </dd>
+    <dt>LEI</dt>
+    <dd>
+      {% if issuer.lei %}
+        {{ issuer.lei }} ·
+        <a href="https://search.gleif.org/#/record/{{ issuer.lei }}"
+           target="_blank" rel="noopener noreferrer"
+           title="Ficha oficial de {{ issuer.issuer_name }} en GLEIF, el registro global de identificadores LEI">
+          Ficha en GLEIF ↗</a>
+      {% else %}
+        Sin LEI registrado
+      {% endif %}
+    </dd>
+  </dl>
+  <p class="muted small">
+    <strong>GLEIF</strong> (Global Legal Entity Identifier Foundation) es el registro oficial global de identificadores LEI de entidades financieras.
+    <strong>OpenFIGI</strong> es el catálogo de identificadores financieros de Bloomberg, donde se pueden buscar instrumentos por ISIN.
   </p>
 </div>
 
@@ -24,40 +54,59 @@
   </p>
 </div>
 
+<!-- ——— Resumen en una frase ——— -->
+{% set n_holders = in_current | length %}
+{% set short_summary = "%d fondos tienen posición corta en %s; en total, el %s %% del capital está en corto" % (n_holders, issuer.issuer_name, disclosed_total) if n_holders > 0 else "No se encuentran posiciones publicadas actualmente para este emisor." %}
+<section class="section">
+  <div class="card card--green">
+    <div class="card-label">Resumen</div>
+    <div class="card-value" style="font-size:1.1rem;font-weight:500;">{{ short_summary }}</div>
+  </div>
+</section>
+
+<!-- ——— Gráfico SVG histórico (si hay histórico) ——— -->
+{% if history | length > 1 %}
+<section class="section">
+  <h2>Evolución del % divulgado</h2>
+  <p class="muted small">
+    Suma de los porcentajes divulgados por todos los titulares a lo largo del tiempo.
+    Las líneas rectas indican periodos sin cambios en las posiciones registradas.
+  </p>
+  <div id="chart-container">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200"
+         width="100%" height="200" role="img"
+         aria-label="Gráfico de evolución del porcentaje divulgado de {{ issuer.issuer_name }}">
+      {{ svg_line_chart(history, disclosed_total) }}
+    </svg>
+  </div>
+</section>
+{% endif %}
+
 <!-- ——— Posiciones publicadas actualmente ——— -->
 <section class="section">
   <h2>Posiciones publicadas actualmente</h2>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Titular (gestora/fondo)</th>
-          <th class="num">Posición corta neta % del capital</th>
-          <th>Fecha de posición</th>
-          <th>Procedencia</th>
+          <th scope="col">Titular (gestora/fondo)</th>
+          <th scope="col" class="num">Posición corta neta % del capital</th>
+          <th scope="col" class="date-col">Fecha de posición</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for s in in_current %}
         <tr>
-          <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
-          <td class="num">{{ s.position_pct }}</td>
-          <td>{{ s.position_date }}</td>
-          <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="4" class="muted">No se encuentran posiciones publicadas actualmente para este emisor.</td>
+          <td class="col-entity">
+            <span class="entity-name"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></span>
+          </td>
+          <td class="num col-num">{{ s.position_pct }}</td>
+          <td class="col-date">{{ s.position_date }}</td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
         </tr>
         {% endfor %}
       </tbody>
-      <tfoot>
-        <tr>
-          <th>Total divulgado</th>
-          <th class="num">{{ disclosed_total }}</th>
-          <th colspan="2"></th>
-        </tr>
-      </tfoot>
     </table>
   </div>
   <p class="muted small">
@@ -80,22 +129,24 @@
     </p>
   </div>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Titular</th>
-          <th class="num">Última posición publicada</th>
-          <th>Fecha de posición</th>
-          <th>Procedencia</th>
+          <th scope="col">Titular</th>
+          <th scope="col" class="num">Última posición publicada</th>
+          <th scope="col" class="date-col">Fecha de posición</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for s in not_current %}
         <tr>
-          <td><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></td>
-          <td class="num">{{ s.position_pct }}</td>
-          <td>{{ s.position_date }}</td>
-          <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
+          <td class="col-entity">
+            <span class="entity-name"><a href="/holder/{{ s.holder_name | urlencode }}">{{ s.holder_name }}</a></span>
+          </td>
+          <td class="num col-num">{{ s.position_pct }}</td>
+          <td class="col-date">{{ s.position_date }}</td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -112,24 +163,26 @@
     ordenadas por fecha de posición (de más reciente a más antigua).
   </p>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Fecha de posición</th>
-          <th class="num">%</th>
-          <th>Titular</th>
-          <th>Primera observación</th>
-          <th>Procedencia</th>
+          <th scope="col" class="date-col">Fecha de posición</th>
+          <th scope="col" class="num">%</th>
+          <th scope="col">Titular</th>
+          <th scope="col">Primera observación</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for r in history %}
         <tr>
-          <td>{{ r.position_date }}</td>
-          <td class="num">{{ r.position_pct }}</td>
-          <td><a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a></td>
-          <td class="muted">{{ r.first_observed_at[:10] }}</td>
-          <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+          <td class="col-date">{{ r.position_date }}</td>
+          <td class="num col-num">{{ r.position_pct }}</td>
+          <td class="col-entity">
+            <a href="/holder/{{ r.holder_name | urlencode }}">{{ r.holder_name }}</a>
+          </td>
+          <td class="muted small">{{ r.first_observed_at[:10] }}</td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
         </tr>
         {% endfor %}
       </tbody>

@@ -3,10 +3,32 @@
 {% block content %}
 <div class="page-header">
   <h1>{{ holder_name }}</h1>
-  <p>
+  <p class="muted">
     Titular (gestora / fondo) · Captura
     <a href="/snapshots/{{ snapshot.snapshot_sha256 }}">
     <code>{{ snapshot.snapshot_sha256[:16] }}…</code></a>
+  </p>
+</div>
+
+<!-- ——— Bloque "Más información" ——— -->
+<div class="info">
+  <p><strong>Más información sobre este titular</strong></p>
+  <dl class="kv">
+    <dt>LEI</dt>
+    <dd>
+      {% if holder_lei %}
+        {{ holder_lei }} ·
+        <a href="https://search.gleif.org/#/record/{{ holder_lei }}"
+           target="_blank" rel="noopener noreferrer"
+           title="Ficha oficial de {{ holder_name }} en GLEIF, el registro global de identificadores LEI">
+          Ficha en GLEIF ↗</a>
+      {% else %}
+        Sin LEI registrado
+      {% endif %}
+    </dd>
+  </dl>
+  <p class="muted small">
+    <strong>GLEIF</strong> (Global Legal Entity Identifier Foundation) es el registro oficial global de identificadores LEI de entidades financieras.
   </p>
 </div>
 
@@ -22,28 +44,38 @@
   </p>
 </div>
 
+<!-- ——— Resumen en una frase ——— -->
+<section class="section">
+  <div class="card card--green">
+    <div class="card-label">Resumen</div>
+    <div class="card-value" style="font-size:1.1rem;font-weight:500;">{{ summary }}</div>
+  </div>
+</section>
+
 <!-- ——— Posiciones actuales ——— -->
 <section class="section">
   <h2>Posiciones publicadas actualmente</h2>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Emisor (empresa)</th>
-          <th>ISIN</th>
-          <th class="num">Posición corta neta % del capital</th>
-          <th>Fecha de posición</th>
-          <th>Procedencia</th>
+          <th scope="col">Emisor (empresa)</th>
+          <th scope="col">ISIN</th>
+          <th scope="col" class="num">Posición corta neta % del capital</th>
+          <th scope="col" class="date-col">Fecha de posición</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for s in states if s.in_current_sheet %}
         <tr>
-          <td><a href="/issuer/{{ s.isin }}">{{ s.issuer_name }}</a></td>
-          <td><code>{{ s.isin }}</code></td>
-          <td class="num">{{ s.position_pct }}</td>
-          <td>{{ s.position_date }}</td>
-          <td><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
+          <td class="col-entity">
+            <span class="entity-name"><a href="/issuer/{{ s.isin }}">{{ s.issuer_name }}</a></span>
+          </td>
+          <td class="col-meta"><code>{{ s.isin }}</code></td>
+          <td class="num col-num">{{ s.position_pct }}</td>
+          <td class="col-date">{{ s.position_date }}</td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ s.disclosure_id }}">fuente</a></td>
         </tr>
         {% else %}
         <tr>
@@ -63,24 +95,26 @@
     ordenadas por fecha de posición (de más reciente a más antigua).
   </p>
   <div class="table-wrap">
-    <table>
+    <table class="compact-table">
       <thead>
         <tr>
-          <th>Fecha de posición</th>
-          <th class="num">%</th>
-          <th>Emisor</th>
-          <th>ISIN</th>
-          <th>Procedencia</th>
+          <th scope="col" class="date-col">Fecha de posición</th>
+          <th scope="col" class="num">%</th>
+          <th scope="col">Emisor</th>
+          <th scope="col">ISIN</th>
+          <th scope="col">Procedencia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-row-widescreen">
         {% for r in history %}
         <tr>
-          <td>{{ r.position_date }}</td>
-          <td class="num">{{ r.position_pct }}</td>
-          <td><a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a></td>
-          <td><code>{{ r.isin }}</code></td>
-          <td><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
+          <td class="col-date">{{ r.position_date }}</td>
+          <td class="num col-num">{{ r.position_pct }}</td>
+          <td class="col-entity">
+            <a href="/issuer/{{ r.isin }}">{{ r.issuer_name }}</a>
+          </td>
+          <td class="col-meta"><code>{{ r.isin }}</code></td>
+          <td class="col-prov"><a class="prov" href="/disclosure/{{ r.disclosure_id }}">fuente</a></td>
         </tr>
         {% endfor %}
       </tbody>

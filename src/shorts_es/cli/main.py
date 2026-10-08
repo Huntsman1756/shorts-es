@@ -649,9 +649,83 @@ def web(
     uvicorn.run(create_app(cfg), host=host, port=port)
 
 
+
+
+# ----------------------------------------------------------------- retention
+
+
+@app.command()
+def retention(
+    max_snapshots: int = typer.Option(0, "--max", help="Keep at most this many snapshots (0 = unlimited)."),
+) -> None:
+    """Enforce snapshot retention policy.
+
+    Removes old raw .xls files that exceed the limit, keeping the most
+    recent ones. The ledger SQLite records are preserved.
+    """
+    cfg = _config()
+    cfg = Config.resolve(cfg.data_dir, max_snapshots=max_snapshots)
+
+    conn = _conn()
+    try:
+        from ..storage import repository as repo
+        result = repo.enforce_retention(conn, cfg.snapshots_dir, cfg.max_snapshots)
+        typer.echo(f"Retention policy: max_snapshots={cfg.max_snapshots}")
+        typer.echo(f"  Total snapshots: {result['total']}")
+        typer.echo(f"  Kept:            {result['kept']}")
+        typer.echo(f"  Removed:         {len(result['removed'])}")
+        if result['removed']:
+            for sha in result['removed']:
+                typer.echo(f"    - {sha[:16]}…")
+    except ShortsEsError as exc:
+        _err(exc)
+    finally:
+        conn.close()
+
 def main() -> None:
     app()
 
 
 if __name__ == "__main__":
     main()
+
+
+# ----------------------------------------------------------------- integrity
+
+
+@app.command()
+def integrity(
+    snapshot: str | None = typer.Argument(None, help="Snapshot sha256/prefix (default: latest)."),
+) -> None:
+    """Run SQLite PRAGMA integrity_check on the ledger."""
+    conn = _conn()
+    try:
+        sha = snapshot or _latest_sha(conn)
+        snap = repo.get_snapshot(conn, sha)
+        if snap is None:
+            raise NotFoundError(f"snapshot not found: {sha}")
+        sha = snap["snapshot_sha256"]
+
+        results = conn.execute("PRAGMA integrity_check").fetchall()
+        result = results[0][0] if results else "unknown"
+
+        if result == "ok":
+            typer.echo("Integrity check: PASSED")
+            typer.echo(f"  Database file is consistent and well-formed.")
+            typer.echo(f"  Snapshot: {sha[:16]}…")
+            typer.echo("")
+            # Also show stats for context
+            stats = repo.dataset_stats(conn)
+            typer.echo(f"  disclosures:  {stats['disclosures']}")
+            typer.echo(f"  issuers:      {stats['issuers']}")
+            typer.echo(f"  holders:      {stats['holders']}")
+            typer.echo(f"  pairs:        {stats['pairs']}")
+            typer.echo(f"  snapshots:    {stats['snapshots']}")
+        else:
+            typer.secho(f"Integrity check: FAILED — {result}", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+    except ShortsEsError as exc:
+        _err(exc)
+    finally:
+        conn.close()
+

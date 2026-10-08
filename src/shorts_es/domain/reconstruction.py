@@ -92,7 +92,9 @@ def issuer_states(
                 else (lei, i, holder) in current_pairs,
             )
         )
-    result.sort(key=lambda p: (-p.position_pct, p.holder_name))
+    # Orden cronológico descendente (lo más reciente primero); empate: nombre.
+    result.sort(key=lambda p: p.holder_name)
+    result.sort(key=lambda p: p.position_date, reverse=True)
     return result
 
 
@@ -121,7 +123,8 @@ def holder_states(
                 in_current_sheet=None if current_pairs is None else (lei, i, h) in current_pairs,
             )
         )
-    result.sort(key=lambda p: (p.issuer_name, -p.position_pct))
+    result.sort(key=lambda p: p.issuer_name)
+    result.sort(key=lambda p: p.position_date, reverse=True)
     return result
 
 

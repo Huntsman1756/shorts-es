@@ -62,6 +62,10 @@ def create_app(config: Config) -> FastAPI:
         name="static",
     )
     app.state.templates = Jinja2Templates(directory=_WEB_DIR / "templates")
+    def _url_encode(v: str) -> str:
+        from urllib.parse import quote_plus
+        return quote_plus(v, safe="")
+    app.state.templates.env.filters["urlencode"] = _url_encode
 
     @app.exception_handler(ShortsEsError)
     async def _shorts_error(request: Request, exc: ShortsEsError) -> JSONResponse:

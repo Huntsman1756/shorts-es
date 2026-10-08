@@ -24,35 +24,127 @@
   </p>
 </div>
 
+<!-- ——— Barra de búsqueda / filtro ——— -->
+<form class="search" action="/issuers" method="get" role="search">
+  <input type="search" name="q" value="{{ q or '' }}"
+         placeholder="Filtrar por nombre, ISIN o LEI" aria-label="Filtrar emisores">
+  <button type="submit">Filtrar</button>
+</form>
+
+<!-- ——— Tabla principal (escritorio) ——— -->
 <div class="table-wrap">
-  <table>
+  <table class="compact-table">
     <thead>
       <tr>
-        <th>Empresa</th>
-        <th>ISIN</th>
-        <th>LEI</th>
-        <th class="num">Divulgado % del capital</th>
-        <th class="num">Titulares</th>
-        <th>Última posición</th>
+        <th scope="col">Empresa</th>
+        <th scope="col">ISIN</th>
+        <th scope="col">LEI</th>
+        <th scope="col" class="num"
+            aria-sort="{{ 'descending' if sort == 'capital' and dir == 'desc' else ('ascending' if sort == 'capital' and dir == 'asc' else 'none') }}">
+          <a href="/issuers{{ sort_link_params('capital', 'desc' if sort != 'capital' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por porcentaje">
+            Divulgado % del capital
+            <span class="sort-arrow{% if sort == 'capital' %} active{% endif %}">{{ '▼' if sort == 'capital' and dir == 'desc' else '▲' if sort == 'capital' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
+        <th scope="col" class="num"
+            aria-sort="{{ 'descending' if sort == 'funds' and dir == 'desc' else ('ascending' if sort == 'funds' and dir == 'asc' else 'none') }}">
+          <a href="/issuers{{ sort_link_params('funds', 'desc' if sort != 'funds' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por número de titulares">
+            Titulares
+            <span class="sort-arrow{% if sort == 'funds' %} active{% endif %}">{{ '▼' if sort == 'funds' and dir == 'desc' else '▲' if sort == 'funds' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
+        <th scope="col" class="date-col"
+            aria-sort="{{ 'descending' if sort == 'date' and dir == 'desc' else ('ascending' if sort == 'date' and dir == 'asc' else 'none') }}">
+          <a href="/issuers{{ sort_link_params('date', 'desc' if sort != 'date' else 'asc', q) }}"
+             class="sort-link" aria-label="Ordenar por fecha">
+            Última posición
+            <span class="sort-arrow{% if sort == 'date' %} active{% endif %}">{{ '▼' if sort == 'date' and dir == 'desc' else '▲' if sort == 'date' and dir == 'asc' else '⇅' }}</span>
+          </a>
+        </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-row-widescreen">
       {% for i in issuers %}
       <tr>
-        <td><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></td>
-        <td><code>{{ i.isin }}</code></td>
-        <td><code>{{ i.lei }}</code></td>
-        <td class="num">{{ i.disclosed_total }}</td>
-        <td class="num">{{ i.funds }}</td>
-        <td>{{ i.last_position_date }}</td>
+        <td class="col-entity col-compact">
+          <span class="entity-name"><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></span>
+        </td>
+        <td class="col-compact">
+          <span class="entity-codes">
+            <code>{{ i.isin }}</code>
+          </span>
+        </td>
+        <td class="col-compact">
+          <span class="entity-codes">
+            {% if i.lei %}
+              <a href="https://search.gleif.org/#/record/{{ i.lei }}"
+                 target="_blank" rel="noopener noreferrer"
+                 title="Ficha oficial de {{ i.issuer_name }} en GLEIF, el registro global de identificadores LEI">
+                {{ i.lei[:8] }}…
+              </a>
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </td>
+        <td class="num">
+          <div class="pct-cell">
+            <span class="pct-bar" style="width:{{ pct_width(i.disclosed_total, max_pct) }}px;"
+                 aria-label="{{ i.disclosed_total }}%"></span>
+            <span class="pct-value">{{ i.disclosed_total }}%</span>
+          </div>
+        </td>
+        <td class="num col-num">{{ i.funds }}</td>
+        <td class="col-date">{{ i.last_position_date }}</td>
+      </tr>
+
+      <!-- Card mode (móvil y tablet) -->
+      <tr class="table-row-cards">
+        <td colspan="6">
+          <div class="card-row">
+            <div class="card-label">Empresa</div>
+            <div class="card-value"><a href="/issuer/{{ i.isin }}">{{ i.issuer_name }}</a></div>
+
+            <div class="card-label">ISIN</div>
+            <div class="card-value"><code>{{ i.isin }}</code></div>
+
+            <div class="card-label">LEI</div>
+            <div class="card-value">
+              {% if i.lei %}
+                <a href="https://search.gleif.org/#/record/{{ i.lei }}"
+                   target="_blank" rel="noopener noreferrer"
+                   title="Ficha oficial de {{ i.issuer_name }} en GLEIF, el registro global de identificadores LEI">
+                  {{ i.lei }} ↗
+                </a>
+              {% else %}
+                —
+              {% endif %}
+            </div>
+
+            <div class="card-label">Divulgado % del capital</div>
+            <div class="card-value">{{ i.disclosed_total }}%</div>
+
+            <div class="card-label">Titulares</div>
+            <div class="card-value">{{ i.funds }}</div>
+
+            <div class="card-label">Última posición</div>
+            <div class="card-value">{{ i.last_position_date }}</div>
+          </div>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
+{% if issuers | length == 0 %}
+<p class="muted">No se encontraron emisores con el filtro aplicado.</p>
+{% endif %}
+
 <p class="muted small">
   Los datos corresponden a las posiciones publicadas en la captura actual.
-  <a href="/issuers">Método de clasificación: por porcentaje de capital divulgado</a>.
+  <strong>No es el interés corto total del mercado</strong>, solo lo que los fondos han notificado a la CNMV.
 </p>
 {% endblock %}

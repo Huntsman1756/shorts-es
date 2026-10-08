@@ -76,19 +76,20 @@ def ingest_snapshot(
                     f.last_modified,
                     publication_date,
                     _parser_version(),
-                    info.fingerprint,
-                    info.physical_fingerprint,
+                    info.fingerprint if info else "",
+                    info.physical_fingerprint if info else "",
                     status,
                     str(stored.raw_path),
                 ),
             )
-            for s in info.sheets:
-                conn.execute(
-                    """INSERT INTO snapshot_sheet
-                       (snapshot_sha256, sheet_name, sheet_order, row_count, col_count)
-                       VALUES (?,?,?,?,?)""",
-                    (stored.sha256, s.name, s.order, s.nrows, s.ncols),
-                )
+            if info is not None:
+                for s in info.sheets:
+                    conn.execute(
+                        """INSERT INTO snapshot_sheet
+                           (snapshot_sha256, sheet_name, sheet_order, row_count, col_count)
+                           VALUES (?,?,?,?,?)""",
+                        (stored.sha256, s.name, s.order, s.nrows, s.ncols),
+                    )
         else:
             conn.execute(
                 """UPDATE snapshot SET retrieved_at = ?, source_url = ?,
@@ -107,8 +108,8 @@ def ingest_snapshot(
                     f.last_modified,
                     publication_date,
                     _parser_version(),
-                    info.fingerprint,
-                    info.physical_fingerprint,
+                    info.fingerprint if info else "",
+                    info.physical_fingerprint if info else "",
                     status,
                     stored.sha256,
                 ),
@@ -285,7 +286,7 @@ def disclosures_for_issuer(
     if known_at:
         sql += " AND first_observed_at <= ?"
         args.append(known_at)
-    sql += " ORDER BY holder_name, position_date DESC"
+    sql += " ORDER BY position_date DESC, holder_name"
     return conn.execute(sql, args).fetchall()
 
 
@@ -297,7 +298,7 @@ def disclosures_for_holder(
     if known_at:
         sql += " AND first_observed_at <= ?"
         args.append(known_at)
-    sql += " ORDER BY isin, position_date DESC"
+    sql += " ORDER BY position_date DESC, isin"
     return conn.execute(sql, args).fetchall()
 
 
@@ -377,7 +378,7 @@ def resolve_pair_disclosures(
     if known_at:
         sql += " AND first_observed_at <= ?"
         args.append(known_at)
-    sql += " ORDER BY position_date"
+    sql += " ORDER BY position_date DESC, holder_name"
     return conn.execute(sql, args).fetchall()
 
 
@@ -558,3 +559,37 @@ def disclosure_ids_since_snapshot(conn: sqlite3.Connection, sha256: str) -> Iter
             (sha256,),
         )
     )
+
+
+def enforce_retention(
+    conn: sqlite3.Connection,
+    snapshots_dir: Path,
+    max_snapshots: int,
+) -> dict:
+    """Enforce snapshot retention policy.
+
+    Keeps the ``max_snapshots`` most recent .xls files (by retrieved_at),
+    removes the rest from disk.
+
+    Returns a dict with counts of removed and kept snapshots.
+    """
+    snaps = conn.execute(
+        "SELECT snapshot_sha256, retrieved_at FROM snapshot ORDER BY retrieved_at DESC"
+    ).fetchall()
+
+    removed = []
+    if max_snapshots > 0 and len(snaps) > max_snapshots:
+        to_remove = snaps[max_snapshots:]
+        for row in to_remove:
+            sha = row[0]
+            xls_path = snapshots_dir / f"{sha}.xls"
+            if xls_path.exists():
+                xls_path.unlink()
+            removed.append(sha)
+
+    return {
+        "total": len(snaps),
+        "kept": len(snaps) - len(removed),
+        "removed": removed,
+        "max_snapshots": max_snapshots,
+    }

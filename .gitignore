@@ -15,9 +15,14 @@ htmlcov/
 
 # Local data (runtime state lives in the platform data dir by default)
 data/local/
+data/snapshots/
+data/snapshots.jsonl
 *.db
 *.db-wal
 *.db-shm
+
+# Notas de trabajo de los agentes (no forman parte del proyecto)
+odd/
 
 # Probe artifacts (not redistributed)
 _probe/
