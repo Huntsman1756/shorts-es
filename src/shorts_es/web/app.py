@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -76,6 +76,11 @@ def create_app(config: Config) -> FastAPI:
         return quote(v, safe="")
     app.state.templates.env.filters["urlencode"] = _url_encode
     app.state.templates.env.filters["pathquote"] = _path_quote
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def _favicon() -> RedirectResponse:
+        """El icono vive en /static: los navegadores que piden la raíz van allí."""
+        return RedirectResponse("/static/favicon.svg", status_code=308)
 
     @app.exception_handler(ShortsEsError)
     async def _shorts_error(request: Request, exc: ShortsEsError) -> JSONResponse:
